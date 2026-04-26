@@ -83,47 +83,54 @@ function HashTable({ table, highlight }) {
     );
 }
 
-const THEORY_SECTIONS = [
+const HASHING_THEORY = [
     {
         title: "What is Hashing?",
-        content: `Hashing is a technique to map keys to array indices using a hash function.
-A hash function h(k) transforms key k into an integer index in range [0, m-1] where m is table size.
-
-Properties of a Good Hash Function:
-• Deterministic: Same key always gives same index
-• Uniform distribution: Keys spread evenly across table  
-• Fast computation: O(1) time to compute
-• Minimize collisions: Different keys should map to different indices`
+        content: (
+            <div className="theory-rich-content">
+                <p><strong>Hashing</strong> is a technique to map keys to array indices using a hash function. A hash function <code>h(k)</code> transforms key <code>k</code> into an integer index in range <code>[0, m-1]</code> where <code>m</code> is the table size.</p>
+                <h4>Properties of a Good Hash Function</h4>
+                <ul>
+                    <li><strong>Deterministic:</strong> The same key always produces the same index.</li>
+                    <li><strong>Uniform distribution:</strong> Keys spread evenly across the table to minimize gaps and clusters.</li>
+                    <li><strong>Fast computation:</strong> Calculating the hash should take <code>O(1)</code> time.</li>
+                    <li><strong>Minimize collisions:</strong> Different keys should rarely map to the same index.</li>
+                </ul>
+            </div>
+        )
     },
     {
         title: "Common Hash Functions",
-        content: `1. Division Method: h(k) = k mod m
-   Best when m is a prime number not close to a power of 2.
-
-2. Multiplication Method: h(k) = ⌊m × (k × A mod 1)⌋
-   A ≈ (√5 - 1)/2 ≈ 0.618 (Knuth's suggestion). Less sensitive to table size.
-
-3. Universal Hashing: Choose h randomly from a family of functions
-   Prevents adversarial worst-case inputs.
-
-4. DJB2 (String Hashing): hash = ((hash << 5) + hash) + char
-   Uses bit shifting to multiply by 33, producing excellent distributions for strings.`
+        content: (
+            <div className="theory-rich-content">
+                <ul>
+                    <li><strong>Division Method:</strong> <code>h(k) = k mod m</code>. Best when <code>m</code> is a prime number not close to a power of 2.</li>
+                    <li><strong>Multiplication Method:</strong> <code>h(k) = ⌊m × (k × A mod 1)⌋</code>. <code>A ≈ 0.618</code> (the Golden Ratio) is often used. It's less sensitive to the table size <code>m</code>.</li>
+                    <li><strong>Universal Hashing:</strong> Choosing <code>h</code> randomly from a family of functions to prevent adversarial worst-case inputs.</li>
+                    <li><strong>DJB2 (String Hashing):</strong> <code>hash = ((hash << 5) + hash) + char</code>. A popular string hashing algorithm known for excellent distribution.</li>
+                </ul>
+            </div>
+        )
     },
     {
         title: "Collision Resolution",
-        content: `Chaining (Separate Chaining):
-• Each slot holds a linked list
-• Multiple keys with same hash go in same list
-• Search: hash key → traverse list
-• Load factor α = n/m (avg list length)
-• Search/Insert: O(1+α) average
-
-Open Addressing:
-• All entries stored in table itself
-• On collision, probe next slots
-  - Linear Probing: h(k,i) = (h(k)+i) mod m   → clustering problem
-  - Quadratic Probing: h(k,i) = (h(k)+i²) mod m → secondary clustering
-  - Double Hashing: h(k,i) = (h1(k) + i·h2(k)) mod m → best`
+        content: (
+            <div className="theory-rich-content">
+                <h4>1. Separate Chaining</h4>
+                <p>Each slot in the table points to a linked list of all keys that hash to that index.</p>
+                <ul>
+                    <li><strong>Search/Insert:</strong> <code>O(1 + α)</code> average, where <code>α = n/m</code> is the load factor.</li>
+                </ul>
+                
+                <h4>2. Open Addressing</h4>
+                <p>All keys are stored directly in the table. On collision, we "probe" for the next empty slot.</p>
+                <ul>
+                    <li><strong>Linear Probing:</strong> <code>h(k,i) = (h(k)+i) mod m</code>. Simple but prone to primary clustering.</li>
+                    <li><strong>Quadratic Probing:</strong> <code>h(k,i) = (h(k)+i²) mod m</code>. Reduces primary clustering.</li>
+                    <li><strong>Double Hashing:</strong> <code>h(k,i) = (h1(k) + i·h2(k)) mod m</code>. Generally provides the best distribution among probing methods.</li>
+                </ul>
+            </div>
+        )
     }
 ];
 
@@ -392,17 +399,18 @@ export default function HashingVisualization() {
             )}
 
             {activeTab === "theory" && (
-                <div className="theory-card">
-                    <div className="panel-header"><p className="panel-title">📖 Complete Hashing Theory</p></div>
+                <div className="theory-card" style={{ maxWidth: 900, margin: "0 auto" }}>
+                    <div className="panel-header"><p className="panel-title" style={{ fontSize: 18 }}>📖 Complete Hashing Theory</p></div>
                     <div className="theory-accordion">
-                        {THEORY_SECTIONS.map((s, i) => (
+                        {HASHING_THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" onClick={() => setOpenSection(openSection === i ? null : i)}>
-                                    {s.title} <span>{openSection === i ? "▲" : "▼"}</span>
+                                <button className="accordion-trigger" style={{ fontSize: 16, padding: "20px 24px" }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                    {s.title} 
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content">
-                                        <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{s.content}</pre>
+                                    <div className="accordion-content" style={{ padding: "0 24px 24px" }}>
+                                        {s.content}
                                     </div>
                                 )}
                             </div>

@@ -87,45 +87,84 @@ function HeapTree({ heap, highlight, comparing }) {
     );
 }
 
-const THEORY_SECTIONS = [
+const HEAP_THEORY = [
     {
         title: "What is a Heap?",
-        content: `A Heap is a complete binary tree satisfying the heap property:
-• Max-Heap: Every parent node is ≥ its children → root is the maximum element.
-• Min-Heap: Every parent node is ≤ its children → root is the minimum element.
-
-Heaps are stored efficiently as arrays: for node at index i, left child = 2i+1, right child = 2i+2, parent = ⌊(i-1)/2⌋.`
+        content: (
+            <div className="theory-rich-content">
+                <p>A <strong>Heap</strong> is a complete binary tree satisfying the heap property:</p>
+                <ul>
+                    <li><strong>Max-Heap:</strong> Every parent node is ≥ its children → root is the maximum element.</li>
+                    <li><strong>Min-Heap:</strong> Every parent node is ≤ its children → root is the minimum element.</li>
+                </ul>
+                <p>Heaps are stored efficiently as arrays. For a node at index <code>i</code>:</p>
+                <div className="theory-formula">
+                    Left Child = 2i + 1<br/>
+                    Right Child = 2i + 2<br/>
+                    Parent = ⌊(i - 1) / 2⌋
+                </div>
+            </div>
+        )
     },
     {
         title: "Key Operations & Complexity",
-        content: `Operation       | Time Complexity
-Insert          | O(log n)       — bubble up
-Delete root     | O(log n)       — heapify down
-Peek (get max/min)| O(1)         — just arr[0]
-Build heap      | O(n)           — surprise! Not O(n log n)
-Heap Sort       | O(n log n)     — optimal comparison sort
-
-Heapify: After inserting at end, compare with parent and swap upward (bubble up). After removing root, move last element to root and push down (heapify down).`
+        content: (
+            <div className="theory-rich-content">
+                <table className="theory-table">
+                    <thead>
+                        <tr><th>Operation</th><th>Time Complexity</th><th>Mechanism</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Insert</td><td>O(log n)</td><td>Bubble up</td></tr>
+                        <tr><td>Delete root</td><td>O(log n)</td><td>Heapify down</td></tr>
+                        <tr><td>Peek (max/min)</td><td>O(1)</td><td>Just arr[0]</td></tr>
+                        <tr><td>Build heap</td><td>O(n)</td><td>Surprise! Not O(n log n)</td></tr>
+                        <tr><td>Heap Sort</td><td>O(n log n)</td><td>Optimal comparison sort</td></tr>
+                    </tbody>
+                </table>
+                <h4>Mechanism Details</h4>
+                <ul>
+                    <li><strong>Heapify Up (Bubble up):</strong> After inserting at end, compare with parent and swap upward.</li>
+                    <li><strong>Heapify Down (Bubble down):</strong> After removing root, move last element to root and push down.</li>
+                </ul>
+            </div>
+        )
     },
     {
         title: "Applications",
-        content: `• Priority Queues (task scheduling, Dijkstra's algorithm)
-• Heap Sort algorithm
-• Finding k-th largest/smallest element efficiently
-• Median maintenance with two heaps
-• Job scheduling with deadlines (Greedy algorithms)
-• Huffman Coding (uses min-heap)
-• Graph algorithms: Prim's MST, Dijkstra's shortest path`
+        content: (
+            <div className="theory-rich-content">
+                <ul>
+                    <li><strong>Priority Queues:</strong> Task scheduling, Dijkstra's algorithm.</li>
+                    <li><strong>Heap Sort:</strong> In-place O(n log n) sorting algorithm.</li>
+                    <li><strong>Finding k-th element:</strong> Find k-th largest/smallest element efficiently.</li>
+                    <li><strong>Median maintenance:</strong> Keeping track of the running median with two heaps.</li>
+                    <li><strong>Job scheduling:</strong> Scheduling with deadlines (Greedy algorithms).</li>
+                    <li><strong>Huffman Coding:</strong> Uses min-heap for optimal prefix codes.</li>
+                    <li><strong>Graph algorithms:</strong> Prim's MST, Dijkstra's shortest path.</li>
+                </ul>
+            </div>
+        )
     },
     {
         title: "Heap vs BST",
-        content: `Feature         | Heap          | BST
-Ordering        | Partial       | Complete (left < root < right)
-Find min/max    | O(1)          | O(log n)
-Search arbitrary| O(n)          | O(log n)
-Insert          | O(log n)      | O(log n)
-Build from array| O(n)          | O(n log n)
-Best use        | Priority queue| Sorted operations`
+        content: (
+            <div className="theory-rich-content">
+                <table className="theory-table">
+                    <thead>
+                        <tr><th>Feature</th><th>Heap</th><th>BST</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Ordering</td><td>Partial</td><td>Complete (left &lt; root &lt; right)</td></tr>
+                        <tr><td>Find min/max</td><td>O(1)</td><td>O(log n)</td></tr>
+                        <tr><td>Search arbitrary</td><td>O(n)</td><td>O(log n)</td></tr>
+                        <tr><td>Insert</td><td>O(log n)</td><td>O(log n)</td></tr>
+                        <tr><td>Build from array</td><td>O(n)</td><td>O(n log n)</td></tr>
+                        <tr><td>Best use</td><td>Priority queue</td><td>Sorted operations</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        )
     }
 ];
 
@@ -410,17 +449,18 @@ export default function HeapVisualization() {
             )}
 
             {activeTab === "theory" && (
-                <div className="theory-card">
-                    <div className="panel-header"><p className="panel-title">📖 Complete Heap Theory</p></div>
+                <div className="theory-card" style={{ maxWidth: 900, margin: "0 auto" }}>
+                    <div className="panel-header"><p className="panel-title" style={{ fontSize: 18 }}>📖 Complete Heap Theory</p></div>
                     <div className="theory-accordion">
-                        {THEORY_SECTIONS.map((s, i) => (
+                        {HEAP_THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" onClick={() => setOpenSection(openSection === i ? null : i)}>
-                                    {s.title} <span>{openSection === i ? "▲" : "▼"}</span>
+                                <button className="accordion-trigger" style={{ fontSize: 16, padding: "20px 24px" }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                    {s.title} 
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content">
-                                        <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{s.content}</pre>
+                                    <div className="accordion-content" style={{ padding: "0 24px 24px" }}>
+                                        {s.content}
                                     </div>
                                 )}
                             </div>
