@@ -62,7 +62,17 @@ export function AuthProvider({ children }) {
             setCurrentUser(user);
             setLoading(false);
         });
-        return unsubscribe;
+
+        // Safety timeout: if Firebase doesn't respond in 5 seconds, 
+        // proceed so the app doesn't stay black forever.
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 5000);
+
+        return () => {
+            unsubscribe();
+            clearTimeout(timer);
+        };
     }, []);
 
     const value = {
@@ -73,9 +83,28 @@ export function AuthProvider({ children }) {
         logout,
     };
 
+    if (loading) {
+        return (
+            <div style={{
+                height: "100vh", display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                background: "#080e1e", color: "white", fontFamily: "sans-serif"
+            }}>
+                <div style={{
+                    width: 40, height: 40, border: "3px solid rgba(255,255,255,0.1)",
+                    borderTopColor: "#3b82f6", borderRadius: "50%",
+                    animation: "spin 1s linear infinite"
+                }}></div>
+                <p style={{ marginTop: 16, opacity: 0.5, fontSize: 14 }}>Initializing DSA Verse...</p>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
+
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 }
+
