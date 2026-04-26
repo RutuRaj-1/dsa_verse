@@ -365,6 +365,20 @@ function validateInput(data, required = []) {
   return { valid: errors.length === 0, errors };
 }
 
+// ── Root Endpoint ──────────────────────────────────────────
+app.get("/", (req, res) => {
+  res.send(`
+    <div style="font-family: sans-serif; text-align: center; padding-top: 100px; background: #0f172a; color: white; height: 100vh;">
+      <h1 style="color: #3b82f6;">🚀 DSA Intelligence API</h1>
+      <p>The backend is running successfully.</p>
+      <p style="color: #94a3b8;">Frontend URL: ${process.env.FRONTEND_URL || 'Not Set'}</p>
+      <div style="margin-top: 20px; padding: 20px; background: #1e293b; display: inline-block; border-radius: 8px;">
+        <code>GET /api/health</code> - Check status
+      </div>
+    </div>
+  `);
+});
+
 // ── Main Analysis Endpoint ────────────────────────────────────────
 app.post("/api/analyze", async (req, res) => {
   const { topic, problem } = req.body;

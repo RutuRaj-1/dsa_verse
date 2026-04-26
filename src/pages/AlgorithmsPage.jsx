@@ -2578,7 +2578,7 @@ export default function AlgorithmsPage() {
               key={k}
               onClick={() => setActiveCategory(k)}
               style={{
-                padding: "10px 20px", borderRadius: 10, border: "none",
+                padding: "10px 20px", borderRadius: 10,
                 background: active ? `${c.color}20` : "rgba(255,255,255,0.04)",
                 border: `1px solid ${active ? c.color + "55" : "rgba(255,255,255,0.08)"}`,
                 color: active ? c.color : "rgba(255,255,255,0.55)",
