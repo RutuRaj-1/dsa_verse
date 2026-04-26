@@ -16,14 +16,19 @@ if (!process.env.GEMINI_API_KEY) {
 const app = express();
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow any localhost origin (dev) or no origin (same-origin/Postman)
-    if (!origin || origin.startsWith("http://localhost")) {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      "http://localhost:5173",
+      "http://localhost:3000"
+    ];
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost")) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   }
 }));
+
 app.use(express.json());
 
 const API_KEY = process.env.GEMINI_API_KEY;
