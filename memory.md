@@ -1,105 +1,65 @@
-# 🧠 DSA Verse — Project Memory & Documentation
+# DSA-Verse | Comprehensive Project Documentation (Memory.md)
 
 ## 1. Project Summary
-**DSA Verse** is a premium, interactive educational platform designed to help students and developers master **Data Structures and Algorithms (DSA)**. It combines high-fidelity visualisations with hands-on "Try It Yourself" modules, deep theoretical foundations, and an AI-powered problem analyser. Built specifically with the **VIT (Vellore Institute of Technology)** syllabus in mind, it provides a comprehensive learning journey from basic arrays to complex graph algorithms and dynamic programming.
+**DSA-Verse** is an advanced, interactive educational platform built to make Data Structures and Algorithms (DSA) both intuitive and visually stunning. Moving far beyond traditional static visualizations, the platform integrates deep theoretical context, dynamic step-by-step execution logs, and an innovative **AI-powered Problem Statement Analyser**.
+
+Designed with a premium "Glassmorphism" aesthetic, dark mode styling, and high-contrast glowing accents, DSA-Verse creates a professional-grade learning environment suitable for academic presentations and serious technical preparation.
+
+## 2. Core Architectural Stack
+*   **Frontend**: React.js (Vite pipeline for lightning-fast HMR)
+*   **Styling**: Pure CSS Custom Design System utilizing CSS Variables, avoiding bloated utility frameworks to maintain absolute granular control over the Glassmorphism UI.
+*   **Icons**: Lucide React
+*   **State Management**: Advanced React Hooks (useState, useMemo, useRef, useCallback, useEffect) for complex animation orchestration.
+*   **Backend Pedagogy Engine**: Node.js, Express, and Google Generative AI (Gemini 1.5 Flash). Features a robust RAG (Retrieval-Augmented Generation) pipeline backed by a curated `context.md` knowledge base.
+*   **Deployment Architecture**: Frontend hosted on Render (`https://dsa-verse-frontend.onrender.com`), Backend hosted on Render (`https://dsa-verse.onrender.com`).
+
+## 3. DSA Logic & Topics Covered
+
+### Data Structures Visualizations
+*   **Arrays**: Contiguous memory representation, Linear/Binary Search, shifting algorithms for insertions and deletions.
+*   **Linked Lists**: Node-pointer architecture covering Singly, Doubly, Circular, and Polynomial Generalized Linked Lists (GLL).
+*   **Stacks & Queues**: LIFO/FIFO patterns, Priority Queues with scheduling logic, and Double-Ended Queues (Deques).
+*   **Trees (Advanced Suite)**: Hierarchical rendering of Binary Search Trees (BST), AVL Trees (Rotations), Red-Black Trees (Color balancing rules), and B-Trees (Node splitting).
+*   **Heaps**: Complete binary tree array mapping showing Min/Max Heapify processes.
+*   **Hashing**: Hash functions (Division, Multiplication, DJB2) with collision resolution via Separate Chaining linked lists.
+
+### The Algorithms Monolith (Standardized Dropdown Architecture)
+The platform features a highly optimized algorithm hub with a standardized UI (glassmorphism select dropdowns) handling multiple categories cleanly:
+*   **Sorting**: Bubble, Selection, Insertion, Merge, Quick, Heap, Counting, Radix, Shell.
+*   **Searching**: Linear, Binary, Fibonacci, Jump.
+*   **Tree Algorithms**: Level Order (BFS), Inorder/Preorder/Postorder (DFS), LCA, Diameter, Height Checking, Morris Traversal.
+*   **Greedy**: Fractional Knapsack, Job Sequencing, Huffman Coding.
+*   **Divide & Conquer**: Merge Sort, Quick Sort, Karatsuba Multiplication.
+*   **Dynamic Programming**: 0/1 Knapsack, LCS, MCM, TSP.
+*   **Graph Algorithms**: BFS, DFS, Dijkstra’s, Kruskal’s, Prim’s.
+*   **Backtracking**: N-Queens (4, 8, 16 board scales), Subset Sum.
+
+## 4. Key Page Summaries
+*   **Algorithms Hub (`AlgorithmsPage.jsx`)**: The crown jewel of the platform. A massive, interactive engine that visualizes 30+ algorithms with an integrated execution log panel.
+*   **AI Practice Page (`PracticePage.jsx`)**: A cutting-edge problem-solving lab. Users submit LeetCode-style questions and receive:
+    *   Algorithmic Pattern Identification & Edge Case Analysis
+    *   Multi-level approaches (Brute-force to Optimal)
+    *   Visual Complexity Analysis (Big-O mapping on a color-coded spectrum)
+    *   Step-by-step Flowchart generation
+    *   Socratic "Hint" progression system
+*   **Standalone DS Pages**: Deep-dive theoretical and interactive pages for specific structures (e.g., `HashingVisualization.jsx`).
+
+## 5. Engineering & Design Innovations
+*   **Async Animation Engine**: A highly robust visual engine that uses custom `sleep(ms)` utilities coupled with `stopRef` mutable state to handle complex recursive visual animations safely without React memory leaks.
+*   **State-Driven SVG Rendering**: Tree and Graph layouts are mathematically computed and rendered using raw SVG paths and circles directly tied to the React state.
+*   **Complexity Spectrum Analyzer**: Replaced outdated legacy code views with a mathematical breakdown of time/space complexity wrapped in a stunning UI.
+*   **Standardized Navigation Matrix**: Migrated clunky horizontal button rows to sleek, category-colored glassmorphism dropdown menus, allowing infinite scalability of algorithm additions without UI breakage.
+
+## 6. Real-World Equivalents Demonstrated
+*   **B-Trees**: Database Indexing mechanisms (MySQL B+Trees).
+*   **Heaps**: CPU Process Scheduling logic.
+*   **Hashing**: Caching architectures and fast O(1) data retrieval.
+*   **Dijkstra's Algorithm**: GPS and network routing packet delivery.
+
+## 7. Future Expansion Roadmap
+*   **Multi-Player Sandbox**: Collaborative coding environments within the Practice section.
+*   **Advanced String Algorithms**: KMP, Z-Algorithm, and Rabin-Karp pattern matchers.
+*   **Custom Dataset Imports**: Allow users to load CSV files into graph nodes or array blocks.
 
 ---
-
-## 2. Tech Stack
-The project leverages a modern, high-performance stack for a seamless user experience:
-
-### Frontend
-- **React 18**: Core UI framework for component-based architecture.
-- **Vite**: Ultra-fast build tool and development server.
-- **Tailwind CSS**: Utility-first styling for the "Glassmorphism" and "Tech-Noir" aesthetic.
-- **Lucide React**: Premium iconography.
-- **Sonner**: Sleek, non-blocking toast notifications.
-- **React Router Dom (v6)**: Client-side routing for seamless page transitions.
-- **Firebase Auth**: Secure user authentication (Email/Password & Google OAuth).
-- **Firebase Firestore**: Real-time database for tracking user progress.
-
-### Backend
-- **Node.js & Express**: Lightweight API server.
-- **Google Generative AI (Gemini 1.5 Pro)**: Advanced AI logic for the "Practice" section's problem analysis.
-- **Axios**: HTTP client for frontend-backend communication.
-- **Dotenv**: Environment variable management for security.
-
----
-
-## 3. DSA Logic Used
-The platform covers an extensive range of algorithmic paradigms:
-
-- **Linear Data Structures**: Array operations, Linked List (Singly, Doubly, Circular) traversal/insertion/deletion, Stack/Queue (LIFO/FIFO) mechanics.
-- **Hierarchical Structures**: 
-    - **Trees**: Binary Search Trees (BST), AVL (Self-balancing), Heaps (Max/Min), and B+/B- Trees.
-    - **Graphs**: Adjacency List/Matrix representations, DFS/BFS traversals, Dijkstra's Shortest Path, Prim's/Kruskal's MST.
-- **Algorithms**:
-    - **Sorting**: Bubble, Selection, Insertion, Merge, Quick, Heap Sort.
-    - **Searching**: Linear, Binary, Interpolation.
-    - **Hashing**: Division, Multiplication, DJB2 methods with collision handling.
-    - **Backtracking**: N-Queens (4, 8, 16), Subset Sum.
-    - **Divide & Conquer**: Karatsuba Multiplication, Merge Sort, Strassen’s Matrix Multiplication.
-    - **Greedy & DP**: Knapsack, Huffman Coding, Fibonacci, LCS.
-
----
-
-## 4. All Pages Summary
-1.  **Landing Page (`/`)**: A high-impact hero section with 3D-like glows, feature cards, and quick-links to topic visualisers.
-2.  **Dashboard (`/dashboard`)**: The central hub for authenticated users to see their progress and jump into learning modules.
-3.  **Visualiser Pages**: 7+ dedicated pages (e.g., `/tree`, `/graph`, `/heap`) featuring:
-    *   **Visualisation Panel**: Canvas/SVG/HTML-based animations of algorithms.
-    *   **Execution Log**: Real-time breakdown of internal steps.
-    *   **Theory Panel**: Deep-dive into definitions, complexity ($O(n)$), and variants.
-4.  **Algorithms Page (`/algorithms`)**: A searchable library of 20+ algorithms with pseudocode and mathematical proofs.
-5.  **Practice Page (`/practice`)**: An "AI Problem Analyser" where users paste questions and get step-by-step logic, flowcharts, and ranked approaches.
-6.  **Auth Pages (`/login`, `/signup`)**: Minimalist, secure entry points for user accounts.
-
----
-
-## 5. All Code Summary
-### Frontend Structure (`/src`)
-- **`/pages`**: Contains the main functional components for each route.
-- **`/components`**: Reusable UI elements (Navbar, Button, Cards, Modals).
-- **`/contexts`**: State management for Authentication (`AuthContext.jsx`).
-- **`/lib`**: Utility functions like `cn` (class merging).
-- **`/theory`**: Static data and markdown content for algorithm theory.
-
-### Backend Structure (`/backend`)
-- **`server.js`**: The main entry point. Handles CORS, environment variables, and the `/api/analyze` endpoint.
-- **Gemini Integration**: Uses a system prompt to force Gemini to output strictly formatted JSON for the problem analyser.
-
----
-
-## 6. Core Logic
-### Visualization Engine
-The "magic" of the visualisers lies in a combination of:
-- **Async Execution**: Algorithm functions are `async`, allowing the use of a `sleep(ms)` utility.
-- **State Snapshots**: Every step of the algorithm updates a React state (e.g., `board`, `array`, `treeNodes`), which triggers a re-render.
-- **Visual Cues**: Changing colors or adding shadows to specific elements in the DOM to indicate current "focus" (e.g., the pivot in QuickSort).
-
-### N-Queens Efficient Search
-For $N=16$, the system uses an optimized backtracking search that finds all possible solutions but caps the results at 100 for browser performance, allowing users to browse valid configurations via the "Solutions Gallery."
-
----
-
-## 7. Real Life Applications
-- **Education**: Primary tool for students in VIT and other CS universities to visualize abstract concepts.
-- **Interview Prep**: Visualizing recursion (Backtracking) and graph paths (Dijkstra) helps in cracking technical interviews at MAANG.
-- **Algorithm Debugging**: Developers can use the "Try It Yourself" input to see where their custom logic might be failing.
-
----
-
-## 8. Future Scope
-- **Collaborative Practice**: Real-time coding rooms for students to solve problems together.
-- **Competitive Ranking**: A leaderboard for the "Practice" section based on problem difficulty solved.
-- **More Advanced DS**: Adding Red-Black Trees, Segment Trees, and Fenwick Trees.
-- **Mobile App**: A React Native version for learning on the go.
-- **PWA Support**: Offline access to theory and basic visualizers.
-
----
-
-## 9. Implementation Plan (Current Phase)
-1.  **Stability**: Finalize deployment environment variables (Firebase/Gemini).
-2.  **Polish**: Add micro-interactions to the "Solutions Gallery."
-3.  **Documentation**: Keep this `memory.md` updated as new features are added.
-4.  **Feedback Loop**: Integrate a feedback form to collect user data for the next unit update.
+**Documentation Prepared by Antigravity AI for Academic & Professional Review**

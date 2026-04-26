@@ -87,38 +87,70 @@ export default function SortingVisualization() {
 
             {activeTab === "visualizer" && (
                 <div className="viz-grid">
-                    <div className="viz-panel">
-                        <div className="panel-header">
-                            <p className="panel-title">Array Bars</p>
-                            <span style={{ fontSize: 12, color: isRunning ? "#34d399" : "rgba(255,255,255,0.4)" }}>
-                                {isRunning ? "Sorting..." : "Ready"}
-                            </span>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        <div style={{
+                            background: "rgba(59,130,246,0.08)",
+                            borderLeft: "4px solid #3b82f6",
+                            borderRadius: "0 14px 14px 0",
+                            padding: "18px 24px",
+                            marginBottom: 10,
+                            fontSize: 15,
+                            color: "rgba(255,255,255,0.8)",
+                            lineHeight: 1.7,
+                            fontStyle: "italic",
+                        }}>
+                            <span style={{ color: "#60a5fa", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+                            {ALGORITHMS[algo].name} works by comparing elements and reordering them. 
+                            {algo === 0 ? " Bubble Sort repeatedly swaps adjacent elements if they are in the wrong order until the largest 'bubbles' to the end." :
+                             algo === 1 ? " Selection Sort finds the smallest element and moves it to the front, repeating for each position." :
+                             " Insertion Sort builds the sorted array one item at a time by inserting the current element into its correct place."}
                         </div>
-                        <div className="panel-body">
-                            <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 200, padding: "0 4px", background: "rgba(0,0,0,0.3)", borderRadius: 10 }}>
-                                {displayArr.map((v, i) => {
-                                    const cmp = currentStep?.cmp || [];
-                                    let color = "#3b82f6";
-                                    if (cmp.includes(i)) color = currentStep?.swapped ? "#34d399" : "#f59e0b";
-                                    return (
-                                        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                                            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700 }}>{v}</span>
-                                            <div style={{ width: "100%", background: color, borderRadius: "3px 3px 0 0", height: `${(v / max) * 160}px`, minHeight: 8, transition: "height 0.15s, background 0.15s" }}></div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
 
-                            {inputSteps.length > 0 && (
-                                <div style={{ marginTop: 12 }}>
-                                    {inputSteps.map((s, i) => (
-                                        <div key={i} className="step-card" style={{ marginBottom: 6 }}>
-                                            <span className="step-number">{i + 1}</span>
-                                            <span className="step-text">{s}</span>
-                                        </div>
-                                    ))}
+                        <div className="viz-panel">
+                            <div className="panel-header">
+                                <p className="panel-title">Array Bars</p>
+                                <span style={{ fontSize: 12, color: isRunning ? "#34d399" : "rgba(255,255,255,0.4)" }}>
+                                    {isRunning ? "Sorting..." : "Ready"}
+                                </span>
+                            </div>
+                            <div className="panel-body">
+                                <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 200, padding: "0 4px", background: "rgba(0,0,0,0.3)", borderRadius: 10 }}>
+                                    {displayArr.map((v, i) => {
+                                        const cmp = currentStep?.cmp || [];
+                                        let color = "#3b82f6";
+                                        if (cmp.includes(i)) color = currentStep?.swapped ? "#34d399" : "#f59e0b";
+                                        return (
+                                            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                                                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700 }}>{v}</span>
+                                                <div style={{ width: "100%", background: color, borderRadius: "3px 3px 0 0", height: `${(v / max) * 160}px`, minHeight: 8, transition: "height 0.15s, background 0.15s" }}></div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            )}
+                            </div>
+                        </div>
+
+                        <div className="log-panel" style={{ height: 250 }}>
+                            <div className="log-header">
+                                <span style={{ color: "#3b82f6" }}>⚡</span> Sorting Execution Log
+                            </div>
+                            <div className="log-content thin-scroll">
+                                {steps.length === 0 ? (
+                                    <div className="log-line" style={{ opacity: 0.4 }}>Select an algorithm and press Start...</div>
+                                ) : (
+                                    steps.slice(0, stepIdx + 1).map((s, i) => (
+                                        <div key={i} className={`log-line ${s.swapped ? "log-success" : ""}`}>
+                                            <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                                            {s.swapped ? `Swap detected! Moving elements at indices ${s.cmp.join(" & ")}` : `Comparing indices ${s.cmp.join(" & ")}... no swap needed.`}
+                                        </div>
+                                    ))
+                                )}
+                                {inputSteps.length > 0 && inputSteps.map((s, i) => (
+                                    <div key={i} className="log-line log-highlight">
+                                        <span style={{ color: "#34d399", marginRight: 12 }}>⚡</span> {s}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
@@ -182,12 +214,15 @@ export default function SortingVisualization() {
                     <div className="theory-accordion">
                         {THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" onClick={() => setOpenSection(openSection === i ? null : i)}>
-                                    {s.title} <span>{openSection === i ? "▲" : "▼"}</span>
+                                <button className="accordion-trigger" style={{ fontSize: 18, padding: "24px 28px", fontWeight: 700 }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                    {s.title} 
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content">
-                                        <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{s.content}</pre>
+                                    <div className="accordion-content" style={{ padding: "0 28px 28px" }}>
+                                        <div className="theory-rich-content">
+                                            <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0, fontSize: "inherit", lineHeight: "inherit" }}>{s.content}</pre>
+                                        </div>
                                     </div>
                                 )}
                             </div>

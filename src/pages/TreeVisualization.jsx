@@ -89,6 +89,28 @@ const THEORY = [
     }
 ];
 
+const S = {
+    intuitionBox: {
+      background: "rgba(59,130,246,0.08)",
+      borderLeft: "4px solid #3b82f6",
+      borderRadius: "0 14px 14px 0",
+      padding: "18px 24px",
+      marginBottom: 24,
+      fontSize: 15,
+      color: "rgba(255,255,255,0.8)",
+      lineHeight: 1.7,
+      fontStyle: "italic",
+      boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+    }
+};
+
+const TREE_INTUITION = {
+    bst: "Binary Search Trees maintain a sorted structure: left < parent < right. This property allows for O(log n) average-case search and insertion by halving the search space at each step.",
+    avl: "AVL Trees are strictly balanced BSTs. After every insertion or deletion, we check the balance factor (height difference). If it exceeds 1, we perform rotations to restore balance, ensuring O(log n) worst-case performance.",
+    rbt: "Red-Black Trees use a coloring scheme (Red/Black) and specific rules to maintain a 'loose' balance. They require fewer rotations than AVL trees on average, making them ideal for high-frequency insert/delete operations.",
+    btree: "B-Trees are optimized for systems that read and write large blocks of data (like disks). By having multiple keys per node, the tree height is significantly reduced, minimizing expensive I/O operations."
+};
+
 class TreeNode {
     constructor(val) {
         this.val = val;
@@ -150,6 +172,7 @@ export default function TreeVisualization() {
     const [userInput, setUserInput] = useState("");
     const [inputSteps, setInputSteps] = useState([]);
     const [log, setLog] = useState(["Execution log initialized."]);
+    const [running, setRunning] = useState(false);
     const logEndRef = useRef(null);
 
     useEffect(() => {
@@ -264,15 +287,52 @@ export default function TreeVisualization() {
         addToLog(`❌ ${v} not found`);
     }
 
-    function traverse(type) {
-        if (!rootNode) return addToLog(`Tree is empty.`);
-        let res = [];
-        if (type === 'inorder') res = getInorder(rootNode);
-        else if (type === 'preorder') res = getPreorder(rootNode);
-        else if (type === 'postorder') res = getPostorder(rootNode);
+    async function traverse(type) {
+        if (!rootNode || running) return;
+        setRunning(true);
+        setHighlight(null);
+        setLog(p => [...p, `--- Starting ${type.toUpperCase()} Traversal ---`]);
         
-        addToLog(`--- ${type.toUpperCase()} Traversal ---`);
-        addToLog(`[${res.join(", ")}]`);
+        const nodes = [];
+        const res = [];
+        
+        async function inorder(node) {
+            if (!node) return;
+            await inorder(node.left);
+            setHighlight(node.val);
+            res.push(node.val);
+            addToLog(`Visit ${node.val} | Current path: [${res.join(", ")}]`);
+            await new Promise(r => setTimeout(r, 800));
+            await inorder(node.right);
+        }
+
+        async function preorder(node) {
+            if (!node) return;
+            setHighlight(node.val);
+            res.push(node.val);
+            addToLog(`Visit ${node.val} | Current path: [${res.join(", ")}]`);
+            await new Promise(r => setTimeout(r, 800));
+            await preorder(node.left);
+            await preorder(node.right);
+        }
+
+        async function postorder(node) {
+            if (!node) return;
+            await postorder(node.left);
+            await postorder(node.right);
+            setHighlight(node.val);
+            res.push(node.val);
+            addToLog(`Visit ${node.val} | Current path: [${res.join(", ")}]`);
+            await new Promise(r => setTimeout(r, 800));
+        }
+
+        if (type === 'inorder') await inorder(rootNode);
+        else if (type === 'preorder') await preorder(rootNode);
+        else if (type === 'postorder') await postorder(rootNode);
+        
+        setHighlight(null);
+        addToLog(`✅ ${type.toUpperCase()} Traversal Complete: [${res.join(", ")}]`);
+        setRunning(false);
     }
 
     function reset() {
@@ -379,6 +439,12 @@ export default function TreeVisualization() {
             {activeTab === "visualizer" && (
                 <div className="viz-grid">
                     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        {/* Intuition Section */}
+                        <div style={S.intuitionBox}>
+                            <span style={{ color: "#60a5fa", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+                            {TREE_INTUITION[treeMode]}
+                        </div>
+
                         <div className="viz-panel">
                             <div className="panel-header">
                                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -418,7 +484,7 @@ export default function TreeVisualization() {
                         </div>
 
                         {/* Permanent Execution Log below Visualizer */}
-                        <div className="log-panel" style={{ height: 200 }}>
+                        <div className="log-panel" style={{ height: 250 }}>
                             <div className="log-header">
                                 <span style={{ color: "#3b82f6" }}>⚡</span> Execution Log
                             </div>
@@ -427,7 +493,7 @@ export default function TreeVisualization() {
                                     let className = "log-line";
                                     if (l.includes("✅")) className += " log-success";
                                     else if (l.includes("❌") || l.includes("⚠️")) className += " log-error";
-                                    else if (l.includes("---")) className += " log-highlight";
+                                    else if (l.includes("---") || l.includes("Traversal")) className += " log-highlight";
                                     return <div key={i} className={className}>{l}</div>;
                                 })}
                                 <div ref={logEndRef} />
@@ -445,8 +511,8 @@ export default function TreeVisualization() {
                                     </div>
                                 </div>
                                 <div style={{ display: "flex", gap: 8 }}>
-                                    <button className="btn-primary" onClick={handleInsert} disabled={!inputVal} style={{ flex: 1 }}>+ Insert</button>
-                                    <button className="btn-danger" onClick={handleDelete} disabled={!inputVal} style={{ flex: 1 }}>- Delete</button>
+                                    <button className="btn-primary" onClick={handleInsert} disabled={!inputVal || running} style={{ flex: 1 }}>+ Insert</button>
+                                    <button className="btn-danger" onClick={handleDelete} disabled={!inputVal || running} style={{ flex: 1 }}>- Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -461,11 +527,11 @@ export default function TreeVisualization() {
                                     </div>
                                 </div>
                                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                                    <button className="btn-secondary" onClick={() => traverse('inorder')} style={{ flex: 1, fontSize: 13 }}>Inorder</button>
-                                    <button className="btn-secondary" onClick={() => traverse('preorder')} style={{ flex: 1, fontSize: 13 }}>Preorder</button>
-                                    <button className="btn-secondary" onClick={() => traverse('postorder')} style={{ flex: 1, fontSize: 13 }}>Postorder</button>
+                                    <button className="btn-secondary" onClick={() => traverse('inorder')} disabled={running} style={{ flex: 1, fontSize: 13 }}>Inorder</button>
+                                    <button className="btn-secondary" onClick={() => traverse('preorder')} disabled={running} style={{ flex: 1, fontSize: 13 }}>Preorder</button>
+                                    <button className="btn-secondary" onClick={() => traverse('postorder')} disabled={running} style={{ flex: 1, fontSize: 13 }}>Postorder</button>
                                 </div>
-                                <button className="btn-secondary" onClick={reset} style={{ marginTop: 8 }}>↺ Reset Tree</button>
+                                <button className="btn-secondary" onClick={reset} disabled={running} style={{ marginTop: 8 }}>↺ Reset Tree</button>
                             </div>
                         </div>
                     </div>
@@ -499,13 +565,15 @@ export default function TreeVisualization() {
                     <div className="theory-accordion">
                         {THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" style={{ fontSize: 16, padding: "20px 24px" }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                <button className="accordion-trigger" style={{ fontSize: 18, padding: "24px 28px", fontWeight: 700 }} onClick={() => setOpenSection(openSection === i ? null : i)}>
                                     {s.title} 
-                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s" }}>▼</span>
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content" style={{ padding: "0 24px 24px" }}>
-                                        {s.content}
+                                    <div className="accordion-content" style={{ padding: "0 28px 28px" }}>
+                                        <div className="theory-rich-content">
+                                            {s.content}
+                                        </div>
                                     </div>
                                 )}
                             </div>

@@ -10,7 +10,7 @@ const THEORY = [
 export default function SearchVisualization() {
     const [arr, setArr] = useState([2, 5, 8, 12, 16, 23, 38, 45, 56, 72, 91]);
     const [target, setTarget] = useState("");
-    const [highlighted, setHighlighted] = useState([]);
+    const [highlighted, setHighlighted] = useState({ low: -1, mid: -1, high: -1 });
     const [found, setFound] = useState(null);
     const [log, setLog] = useState([]);
     const [isRunning, setIsRunning] = useState(false);
@@ -28,7 +28,7 @@ export default function SearchVisualization() {
         const newLog = [];
         while (low <= high) {
             const mid = Math.floor((low + high) / 2);
-            setHighlighted([low, mid, high]);
+            setHighlighted({ low, mid, high });
             newLog.push(`low=${low}, high=${high}, mid=${mid} → arr[mid]=${arr[mid]}`);
             setLog([...newLog]);
             await sleep(900);
@@ -53,23 +53,23 @@ export default function SearchVisualization() {
     async function linearSearch(t) {
         const newLog = [];
         for (let i = 0; i < arr.length; i++) {
-            setHighlighted([i]);
+            setHighlighted({ low: -1, mid: i, high: -1 });
             newLog.push(`Check arr[${i}]=${arr[i]} ${arr[i] === t ? "→ ✅ FOUND!" : "≠ " + t}`);
-            setLog([...newLog.slice(-5)]);
+            setLog([...newLog]);
             await sleep(700);
             if (arr[i] === t) { setFound(i); return; }
         }
         newLog.push("❌ Not found");
-        setLog([...newLog.slice(-4)]);
+        setLog([...newLog]);
     }
 
     async function runSearch() {
         const t = parseInt(target);
         if (isNaN(t)) return;
-        setIsRunning(true); setHighlighted([]); setFound(null); setLog([]);
+        setIsRunning(true); setHighlighted({ low: -1, mid: -1, high: -1 }); setFound(null); setLog([]);
         if (algo === "binary") await binarySearch(t);
         else await linearSearch(t);
-        setHighlighted([]);
+        setHighlighted({ low: -1, mid: -1, high: -1 });
         setIsRunning(false);
     }
 
@@ -82,7 +82,6 @@ export default function SearchVisualization() {
         const steps = [
             `Array after sorting: [${sorted.join(", ")}] (Binary Search requires sorted array!)`,
             isNaN(t) ? `Enter a target to see the search steps` : `Searching for ${t}:`,
-            isNaN(t) ? "" : `Step 1: mid = (0 + ${sorted.length - 1}) / 2 = ${Math.floor((sorted.length - 1) / 2)} → arr[mid] = ${sorted[Math.floor((sorted.length - 1) / 2)]}`,
             isNaN(t) ? "" : sorted.includes(t) ? `Target ${t} found in array → Binary search will find it in ≤${Math.ceil(Math.log2(sorted.length))} comparisons` : `Target ${t} not in array → Binary search eliminates half the array each step`,
             `Maximum comparisons needed: ⌈log₂(${sorted.length})⌉ = ${Math.ceil(Math.log2(sorted.length))} comparisons`,
             `Compare to Linear Search: worst case ${sorted.length} comparisons for this array`,
@@ -107,43 +106,64 @@ export default function SearchVisualization() {
 
             {activeTab === "visualizer" && (
                 <div className="viz-grid">
-                    <div className="viz-panel">
-                        <div className="panel-header"><p className="panel-title">Sorted Array</p></div>
-                        <div className="panel-body">
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", background: "rgba(0,0,0,0.3)", borderRadius: 10, padding: "20px" }}>
-                                {arr.map((v, i) => {
-                                    const isFound = found === i;
-                                    const isHl = highlighted.includes(i);
-                                    let bg = "rgba(59,130,246,0.15)", border = "#3b82f6", color = "#f1f5f9";
-                                    if (isFound) { bg = "rgba(52,211,153,0.3)"; border = "#34d399"; }
-                                    else if (highlighted.length === 3 && i === highlighted[1]) { bg = "rgba(245,158,11,0.3)"; border = "#f59e0b"; }
-                                    else if (isHl) { bg = "rgba(167,139,250,0.25)"; border = "#a78bfa"; }
-                                    return (
-                                        <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                                            <div style={{ width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", background: bg, border: `1.5px solid ${border}`, borderRadius: 8, fontWeight: 700, fontSize: 14, color, transition: "all 0.3s" }}>{v}</div>
-                                            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "monospace" }}>[{i}]</span>
-                                            {highlighted.length === 3 && i === highlighted[0] && <span style={{ fontSize: 9, color: "#a78bfa", fontWeight: 700 }}>low</span>}
-                                            {highlighted.length === 3 && i === highlighted[1] && <span style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700 }}>mid</span>}
-                                            {highlighted.length === 3 && i === highlighted[2] && <span style={{ fontSize: 9, color: "#a78bfa", fontWeight: 700 }}>high</span>}
-                                        </div>
-                                    );
-                                })}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        <div style={{
+                            background: "rgba(6,182,212,0.08)",
+                            borderLeft: "4px solid #06b6d4",
+                            borderRadius: "0 14px 14px 0",
+                            padding: "18px 24px",
+                            marginBottom: 10,
+                            fontSize: 15,
+                            color: "rgba(255,255,255,0.8)",
+                            lineHeight: 1.7,
+                            fontStyle: "italic",
+                        }}>
+                            <span style={{ color: "#22d3ee", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+                            {algo === "binary" ? "Binary Search is a divide-and-conquer algorithm. It works on SORTED arrays by repeatedly halving the search space until the target is found or the search space is empty." :
+                             "Linear Search is the simplest search algorithm. It checks every element in the array sequentially until a match is found or the end is reached."}
+                        </div>
+
+                        <div className="viz-panel">
+                            <div className="panel-header"><p className="panel-title">Search Visualization</p></div>
+                            <div className="panel-body">
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", background: "rgba(0,0,0,0.3)", borderRadius: 10, padding: "20px" }}>
+                                    {arr.map((v, i) => {
+                                        const isFound = found === i;
+                                        const isHl = highlighted.low === i || highlighted.mid === i || highlighted.high === i;
+                                        let bg = "rgba(59,130,246,0.15)", border = "#3b82f6", color = "#f1f5f9";
+                                        if (isFound) { bg = "rgba(52,211,153,0.3)"; border = "#34d399"; }
+                                        else if (highlighted.mid === i) { bg = "rgba(245,158,11,0.3)"; border = "#f59e0b"; }
+                                        else if (i >= highlighted.low && i <= highlighted.high) { bg = "rgba(167,139,250,0.25)"; border = "#a78bfa"; }
+                                        return (
+                                            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                                                <div style={{ width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", background: bg, border: `1.5px solid ${border}`, borderRadius: 8, fontWeight: 700, fontSize: 14, color, transition: "all 0.3s" }}>{v}</div>
+                                                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "monospace" }}>[{i}]</span>
+                                                {highlighted.low === i && <span style={{ fontSize: 9, color: "#a78bfa", fontWeight: 700 }}>low</span>}
+                                                {highlighted.mid === i && <span style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700 }}>mid</span>}
+                                                {highlighted.high === i && <span style={{ fontSize: 9, color: "#a78bfa", fontWeight: 700 }}>high</span>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                            {log.length > 0 && (
-                                <div style={{ marginTop: 12, background: "rgba(0,0,0,0.3)", borderRadius: 8, padding: "10px 14px", maxHeight: 140, overflowY: "auto" }}>
-                                    {log.map((l, i) => <p key={i} style={{ fontSize: 12, color: l.includes("✅") || l.includes("Found") ? "#34d399" : l.includes("❌") ? "#f87171" : "rgba(255,255,255,0.65)", margin: "2px 0", fontFamily: "monospace" }}>{l}</p>)}
-                                </div>
-                            )}
-                            {inputSteps.length > 0 && (
-                                <div style={{ marginTop: 12 }}>
-                                    {inputSteps.map((s, i) => (
-                                        <div key={i} className="step-card" style={{ marginBottom: 6 }}>
-                                            <span className="step-number">{i + 1}</span>
-                                            <span className="step-text">{s}</span>
+                        </div>
+
+                        <div className="log-panel" style={{ height: 250 }}>
+                            <div className="log-header">
+                                <span style={{ color: "#22d3ee" }}>⚡</span> Searching Execution Log
+                            </div>
+                            <div className="log-content thin-scroll">
+                                {log.length === 0 ? (
+                                    <div className="log-line" style={{ opacity: 0.4 }}>Enter a target and press Search...</div>
+                                ) : (
+                                    log.map((l, i) => (
+                                        <div key={i} className={`log-line ${l.includes("✅") ? "log-success" : l.includes("❌") ? "log-error" : "log-highlight"}`}>
+                                            <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                                            {l}
                                         </div>
-                                    ))}
-                                </div>
-                            )}
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -157,7 +177,7 @@ export default function SearchVisualization() {
                                 </select>
                                 <input className="ctrl-input" type="number" placeholder="Target value" value={target} onChange={e => setTarget(e.target.value)} />
                                 <button className="btn-primary" onClick={runSearch} disabled={!target || isRunning}>{isRunning ? "Searching..." : "🔍 Search"}</button>
-                                <button className="btn-secondary" onClick={() => { setHighlighted([]); setFound(null); setLog([]); }}>Clear</button>
+                                <button className="btn-secondary" onClick={() => { setHighlighted({ low: -1, mid: -1, high: -1 }); setFound(null); setLog([]); }}>Clear</button>
                             </div>
                         </div>
                     </div>
@@ -185,12 +205,15 @@ export default function SearchVisualization() {
                     <div className="theory-accordion">
                         {THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" onClick={() => setOpenSection(openSection === i ? null : i)}>
-                                    {s.title} <span>{openSection === i ? "▲" : "▼"}</span>
+                                <button className="accordion-trigger" style={{ fontSize: 18, padding: "24px 28px", fontWeight: 700 }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                    {s.title} 
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content">
-                                        <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{s.content}</pre>
+                                    <div className="accordion-content" style={{ padding: "0 28px 28px" }}>
+                                        <div className="theory-rich-content">
+                                            <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0, fontSize: "inherit", lineHeight: "inherit" }}>{s.content}</pre>
+                                        </div>
                                     </div>
                                 )}
                             </div>

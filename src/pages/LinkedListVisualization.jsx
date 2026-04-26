@@ -456,6 +456,27 @@ export default function LinkedListVisualization() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                     <div className="viz-grid">
                         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                            {/* Intuition Section */}
+                            <div style={{
+                                background: "rgba(59,130,246,0.08)",
+                                borderLeft: "4px solid #3b82f6",
+                                borderRadius: "0 14px 14px 0",
+                                padding: "18px 24px",
+                                marginBottom: 10,
+                                fontSize: 15,
+                                color: "rgba(255,255,255,0.8)",
+                                lineHeight: 1.7,
+                                fontStyle: "italic",
+                            }}>
+                                <span style={{ color: "#60a5fa", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+                                {listType === "singly" 
+                                    ? "Singly Linked Lists are efficient for stack-like operations (LIFO) at the head. They use minimal memory per node but only allow forward traversal."
+                                    : listType === "doubly"
+                                    ? "Doubly Linked Lists allow bidirectional traversal and O(1) deletion of a node if you have a pointer to it. The trade-off is extra memory for the 'prev' pointers."
+                                    : "Circular Linked Lists connect the last node back to the head, making them ideal for buffer management and round-robin scheduling algorithms."
+                                }
+                            </div>
+
                             <div className="viz-panel">
                                 <div className="panel-header">
                                     <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -491,7 +512,7 @@ export default function LinkedListVisualization() {
                             </div>
 
                             {/* Permanent Execution Log below Visualizer */}
-                            <div className="log-panel" style={{ height: 200 }}>
+                            <div className="log-panel" style={{ height: 250 }}>
                                 <div className="log-header">
                                     <span style={{ color: "#3b82f6" }}>⚡</span> Execution Log
                                 </div>
@@ -636,13 +657,15 @@ export default function LinkedListVisualization() {
                     <div className="theory-accordion">
                         {THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" style={{ fontSize: 16, padding: "20px 24px" }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                <button className="accordion-trigger" style={{ fontSize: 18, padding: "24px 28px", fontWeight: 700 }} onClick={() => setOpenSection(openSection === i ? null : i)}>
                                     {s.title} 
-                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s" }}>▼</span>
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content" style={{ padding: "0 24px 24px" }}>
-                                        {s.content}
+                                    <div className="accordion-content" style={{ padding: "0 28px 28px" }}>
+                                        <div className="theory-rich-content">
+                                            {s.content}
+                                        </div>
                                     </div>
                                 )}
                             </div>

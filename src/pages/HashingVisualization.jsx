@@ -85,54 +85,84 @@ function HashTable({ table, highlight }) {
 
 const HASHING_THEORY = [
     {
-        title: "What is Hashing?",
+        title: "1. The Concept of Hashing",
         content: (
             <div className="theory-rich-content">
-                <p><strong>Hashing</strong> is a technique to map keys to array indices using a hash function. A hash function <code>h(k)</code> transforms key <code>k</code> into an integer index in range <code>[0, m-1]</code> where <code>m</code> is the table size.</p>
-                <h4>Properties of a Good Hash Function</h4>
+                <p><strong>Hashing</strong> is a technique to map a large range of keys into a smaller range of indices using a <strong>Hash Function</strong> <code>h(k)</code>. This allows for near <code>O(1)</code> average-case time complexity for insertion, deletion, and lookup.</p>
+                <h4>Properties of a Good Hash Function:</h4>
                 <ul>
-                    <li><strong>Deterministic:</strong> The same key always produces the same index.</li>
-                    <li><strong>Uniform distribution:</strong> Keys spread evenly across the table to minimize gaps and clusters.</li>
-                    <li><strong>Fast computation:</strong> Calculating the hash should take <code>O(1)</code> time.</li>
-                    <li><strong>Minimize collisions:</strong> Different keys should rarely map to the same index.</li>
+                    <li><strong>Deterministic:</strong> Same input always yields the same index.</li>
+                    <li><strong>Uniformity:</strong> Keys are distributed evenly across the table.</li>
+                    <li><strong>Efficiency:</strong> Computation of the hash should be fast (O(1)).</li>
+                    <li><strong>Minimizing Collisions:</strong> Minimizes instances where <code>h(k1) == h(k2)</code> for different keys.</li>
                 </ul>
             </div>
         )
     },
     {
-        title: "Common Hash Functions",
+        title: "2. Common Hash Functions",
         content: (
             <div className="theory-rich-content">
+                <p>Several methods exist to transform keys (strings or numbers) into table indices:</p>
                 <ul>
-                    <li><strong>Division Method:</strong> <code>h(k) = k mod m</code>. Best when <code>m</code> is a prime number not close to a power of 2.</li>
-                    <li><strong>Multiplication Method:</strong> <code>h(k) = ⌊m × (k × A mod 1)⌋</code>. <code>A ≈ 0.618</code> (the Golden Ratio) is often used. It's less sensitive to the table size <code>m</code>.</li>
-                    <li><strong>Universal Hashing:</strong> Choosing <code>h</code> randomly from a family of functions to prevent adversarial worst-case inputs.</li>
-                    <li><strong>DJB2 (String Hashing):</strong> <code>hash = ((hash << 5) + hash) + char</code>. A popular string hashing algorithm known for excellent distribution.</li>
+                    <li><strong>Division Method:</strong> Uses modulo operator. <code>h(k) = k mod m</code>. Best when <code>m</code> is a prime number.</li>
+                    <li><strong>Multiplication Method:</strong> Uses a fractional constant <code>A</code>. <code>h(k) = floor(m * (kA mod 1))</code>. Less sensitive to table size.</li>
+                    <li><strong>DJB2 (String Hashing):</strong> A popular string hashing algorithm that uses bit shifting and a magic number (5381) to ensure high entropy.</li>
+                </ul>
+                <div className="theory-formula">
+                    h(k) = Σ(char_codes) mod table_size
+                </div>
+            </div>
+        )
+    },
+    {
+        title: "3. Collision Resolution Strategies",
+        content: (
+            <div className="theory-rich-content">
+                <p>When two different keys map to the same index, a <strong>Collision</strong> occurs. There are two primary ways to handle this:</p>
+                <h4>Separate Chaining:</h4>
+                <p>Each table slot points to a linked list (or chain) of entries. This allows the table to store more elements than its size, but lookup degrades to <code>O(n)</code> in the worst case.</p>
+                <h4>Open Addressing (Linear Probing):</h4>
+                <p>All elements are stored directly in the hash table. If a collision occurs at index <code>i</code>, we check <code>i+1</code>, <code>i+2</code>, etc., until an empty slot is found.</p>
+                <ul>
+                    <li><strong>Clustering:</strong> Linear Probing causes 'primary clustering' where long runs of occupied slots build up, slowing down operations.</li>
+                    <li><strong>Quadratic Probing:</strong> Uses a quadratic function to find the next slot (i+1², i+2²...). Reduces clustering.</li>
+                    <li><strong>Double Hashing:</strong> Uses a second hash function to determine the step size.</li>
                 </ul>
             </div>
         )
     },
     {
-        title: "Collision Resolution",
+        title: "4. Load Factor & Rehashing",
         content: (
             <div className="theory-rich-content">
-                <h4>1. Separate Chaining</h4>
-                <p>Each slot in the table points to a linked list of all keys that hash to that index.</p>
+                <p>The <strong>Load Factor (α)</strong> is defined as <code>n / m</code> (number of elements / table size). As α increases, the probability of collisions grows.</p>
                 <ul>
-                    <li><strong>Search/Insert:</strong> <code>O(1 + α)</code> average, where <code>α = n/m</code> is the load factor.</li>
+                    <li>In Chaining, &alpha; can be &gt; 1.</li>
+                    <li>In Open Addressing, &alpha; must be &lt; 1.</li>
                 </ul>
-                
-                <h4>2. Open Addressing</h4>
-                <p>All keys are stored directly in the table. On collision, we "probe" for the next empty slot.</p>
-                <ul>
-                    <li><strong>Linear Probing:</strong> <code>h(k,i) = (h(k)+i) mod m</code>. Simple but prone to primary clustering.</li>
-                    <li><strong>Quadratic Probing:</strong> <code>h(k,i) = (h(k)+i²) mod m</code>. Reduces primary clustering.</li>
-                    <li><strong>Double Hashing:</strong> <code>h(k,i) = (h1(k) + i·h2(k)) mod m</code>. Generally provides the best distribution among probing methods.</li>
-                </ul>
+                <p><strong>Rehashing:</strong> When α exceeds a threshold (typically 0.75), the table is resized (usually doubled) and all existing keys are re-inserted into the new table.</p>
             </div>
         )
     }
 ];
+
+
+
+const S = {
+    intuitionBox: {
+        background: "rgba(245,158,11,0.08)",
+        borderLeft: "4px solid #f59e0b",
+        borderRadius: "0 14px 14px 0",
+        padding: "18px 24px",
+        marginBottom: 24,
+        fontSize: 15,
+        color: "rgba(255,255,255,0.8)",
+        lineHeight: 1.7,
+        fontStyle: "italic",
+        boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+    }
+};
 
 export default function HashingVisualization() {
     const [tableSize, setTableSize] = useState(10);
@@ -176,55 +206,62 @@ export default function HashingVisualization() {
         setKey(""); setValue("");
 
         addToLog(`⚡ Starting Insertion for Key: "${k}"`);
-        addToLog(`Selected Hash Function: ${HASH_FUNCTIONS[hashAlgo].name}`);
-        await sleep(1000);
-
-        addToLog(`Calculating Hash Steps:`);
-        const result = calculateHash(k, table.length, hashAlgo);
-        
-        if (hashAlgo === "division") {
-            addToLog(`1) Sum of char codes for "${k}" = ${result.sum}`);
-            await sleep(800);
-            addToLog(`2) Index = ${result.sum} % ${table.length} (Table Size)`);
-        } else if (hashAlgo === "multiplication") {
-            addToLog(`1) Sum of char codes = ${result.sum}`);
-            await sleep(800);
-            addToLog(`2) Fractional part: (${result.sum} * 0.618) % 1 = ${result.frac.toFixed(4)}`);
-            await sleep(800);
-            addToLog(`3) Index = Floor(${table.length} * ${result.frac.toFixed(4)})`);
-        } else if (hashAlgo === "djb2") {
-            addToLog(`1) Applying bitwise shifting ((hash << 5) + hash) + char`);
-            await sleep(800);
-            addToLog(`2) Raw Hash generated = ${result.rawHash}`);
-            await sleep(800);
-            addToLog(`3) Index = ${result.rawHash} % ${table.length}`);
-        }
-
-        const idx = result.index;
-        await sleep(1000);
-        addToLog(`➡️ FINAL INDEX GENERATED: ${idx}`);
-        setHighlight(idx);
-        await sleep(1000);
-
-        addToLog(`Checking Hash Table at index [${idx}]...`);
-        const newTable = table.map(s => [...s]);
-        const existing = newTable[idx].findIndex(e => e.key === k);
-        
+        addToLog(`Hash: ${HASH_FUNCTIONS[hashAlgo].name} | Strategy: ${collisionStrategy}`);
         await sleep(800);
-        if (existing >= 0) {
-            addToLog(`⚠️ Key "${k}" already exists at index [${idx}]. Updating value.`);
-            newTable[idx][existing].value = v;
-        } else {
-            if (newTable[idx].length > 0) {
-                addToLog(`💥 COLLISION DETECTED at index [${idx}]. Appending to chain.`);
+
+        const result = calculateHash(k, table.length, hashAlgo);
+        const startIdx = result.index;
+        
+        addToLog(`Calculated Base Index: ${startIdx}`);
+        setHighlight(startIdx);
+        await sleep(1000);
+
+        const newTable = table.map(s => [...s]);
+
+        if (collisionStrategy === "chaining") {
+            const existing = newTable[startIdx].findIndex(e => e.key === k);
+            if (existing >= 0) {
+                addToLog(`⚠️ Updating existing key "${k}" at index ${startIdx}`);
+                newTable[startIdx][existing].value = v;
             } else {
-                addToLog(`✅ Slot is empty. Inserting directly.`);
+                if (newTable[startIdx].length > 0) addToLog(`💥 Collision at ${startIdx}! Adding to chain.`);
+                else addToLog(`✅ Slot ${startIdx} empty. Inserting.`);
+                newTable[startIdx].push({ key: k, value: v });
             }
-            newTable[idx].push({ key: k, value: v });
+        } else {
+            // Linear Probing
+            let curr = startIdx;
+            let found = false;
+            let steps = 0;
+
+            while (steps < table.length) {
+                setProbingIdx(curr);
+                addToLog(`Probing index ${curr}...`);
+                await sleep(600);
+
+                if (newTable[curr].length === 0) {
+                    addToLog(`✅ Found empty slot at ${curr}. Inserting.`);
+                    newTable[curr] = [{ key: k, value: v }];
+                    found = true;
+                    break;
+                } else if (newTable[curr][0].key === k) {
+                    addToLog(`⚠️ Key "${k}" already at ${curr}. Updating.`);
+                    newTable[curr] = [{ key: k, value: v }];
+                    found = true;
+                    break;
+                }
+
+                addToLog(`❌ Slot ${curr} occupied. Moving to next...`);
+                curr = (curr + 1) % table.length;
+                steps++;
+            }
+
+            if (!found) addToLog("❌ ERROR: Hash Table is full!");
+            setProbingIdx(null);
         }
         
         setTable(newTable);
-        await sleep(1000);
+        await sleep(800);
         setHighlight(null);
         addToLog(`✅ Operation Complete.`);
         setIsRunning(false);
@@ -237,19 +274,35 @@ export default function HashingVisualization() {
         addToLog(`🔍 Searching for Key: "${k}"`);
 
         const result = calculateHash(k, table.length, hashAlgo);
-        const idx = result.index;
-        addToLog(`Hash function generated Index = ${idx}`);
-        setHighlight(idx);
-        await sleep(1000);
+        const startIdx = result.index;
+        setHighlight(startIdx);
+        await sleep(800);
 
-        addToLog(`Traversing chain at index [${idx}]...`);
-        const found = table[idx].find(e => e.key === k);
-        await sleep(1000);
-
-        if (found) {
-            addToLog(`✅ Found "${k}"! Value = "${found.value}"`);
+        if (collisionStrategy === "chaining") {
+            const found = table[startIdx].find(e => e.key === k);
+            if (found) addToLog(`✅ Found "${k}" in chain at ${startIdx}! Value = ${found.value}`);
+            else addToLog(`❌ "${k}" not found in chain at ${startIdx}`);
         } else {
-            addToLog(`❌ "${k}" not found in chain at index [${idx}]`);
+            let curr = startIdx;
+            let steps = 0;
+            let found = false;
+
+            while (steps < table.length) {
+                setProbingIdx(curr);
+                addToLog(`Checking index ${curr}...`);
+                await sleep(500);
+
+                if (table[curr].length === 0) break;
+                if (table[curr][0].key === k) {
+                    addToLog(`✅ Found "${k}" at ${curr}! Value = ${table[curr][0].value}`);
+                    found = true;
+                    break;
+                }
+                curr = (curr + 1) % table.length;
+                steps++;
+            }
+            if (!found) addToLog(`❌ "${k}" not found in probing sequence.`);
+            setProbingIdx(null);
         }
 
         setHighlight(null);
@@ -263,26 +316,6 @@ export default function HashingVisualization() {
 
     return (
         <div className="page-container">
-            <style>{`
-                .theory-rich-content { color: rgba(255,255,255,0.85); font-size: 15px; line-height: 1.7; }
-                .theory-rich-content h4 { color: #60a5fa; margin: 16px 0 8px; font-size: 16px; font-weight: 700; }
-                .log-panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-                .log-header { background: #1e293b; padding: 10px 16px; font-size: 14px; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #334155; }
-                .log-content { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; scroll-behavior: smooth; }
-                .log-line { color: #e2e8f0; line-height: 1.5; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
-                .log-line:hover { background: rgba(255,255,255,0.05); }
-                .log-success { color: #34d399; font-weight: 600; background: rgba(52,211,153,0.1); }
-                .log-error { color: #f87171; font-weight: 600; background: rgba(248,113,113,0.1); }
-                .log-highlight { color: #818cf8; }
-                .ctrl-select, .ctrl-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f1f5f9; border-radius: 8px; padding: 10px 14px; outline: none; }
-                .ctrl-select option { background: #1e293b; color: #f1f5f9; }
-                
-                .algo-card { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 8px; margin-top: 10px; }
-                .algo-title { color: #60a5fa; font-weight: 700; font-size: 15px; margin-bottom: 8px; }
-                .algo-desc { color: rgba(255,255,255,0.7); font-size: 13.5px; line-height: 1.5; margin-bottom: 12px; }
-                .algo-formula { background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: monospace; color: #a78bfa; font-size: 13px; }
-            `}</style>
-
             <div className="page-header">
                 <Link to="/" className="back-btn">← Back to Topics</Link>
                 <h1 className="page-title">Hashing & Hash Tables</h1>
@@ -298,6 +331,12 @@ export default function HashingVisualization() {
             {activeTab === "visualizer" && (
                 <div className="viz-grid">
                     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        {/* Intuition Section */}
+                        <div style={S.intuitionBox}>
+                            <span style={{ color: "#fb923c", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+                            Hashing maps large keys to small indexes using a hash function. Collisions are inevitable (Pigeonhole Principle), so we use techniques like Separate Chaining (linked lists at each slot) to maintain O(1) average-case lookups.
+                        </div>
+
                         <div className="viz-panel">
                             <div className="panel-header">
                                 <p className="panel-title">Hash Table (Chaining Resolution)</p>
@@ -306,12 +345,12 @@ export default function HashingVisualization() {
                                 </span>
                             </div>
                             <div className="panel-body">
-                                <HashTable table={table} highlight={highlight} />
+                                <HashTable table={table} highlight={highlight || probingIdx} />
                             </div>
                         </div>
 
                         {/* Permanent Execution Log below Visualizer */}
-                        <div className="log-panel">
+                        <div className="log-panel" style={{ height: 250 }}>
                             <div className="log-header">
                                 <span style={{ color: "#3b82f6" }}>⚡</span> Execution Log
                             </div>
@@ -334,6 +373,17 @@ export default function HashingVisualization() {
                             <div className="panel-header"><p className="panel-title">Hash Function Settings</p></div>
                             <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                                 <div>
+                                    <label className="ctrl-label">Collision Resolution Strategy</label>
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                        <button className={`btn-secondary ${collisionStrategy === "chaining" ? "active" : ""}`} 
+                                            style={{ flex: 1, background: collisionStrategy === "chaining" ? "rgba(59,130,246,0.2)" : "transparent", borderColor: collisionStrategy === "chaining" ? "#3b82f6" : "rgba(255,255,255,0.1)" }}
+                                            onClick={() => { setCollisionStrategy("chaining"); reset(); }}>Separate Chaining</button>
+                                        <button className={`btn-secondary ${collisionStrategy === "probing" ? "active" : ""}`}
+                                            style={{ flex: 1, background: collisionStrategy === "probing" ? "rgba(59,130,246,0.2)" : "transparent", borderColor: collisionStrategy === "probing" ? "#3b82f6" : "rgba(255,255,255,0.1)" }}
+                                            onClick={() => { setCollisionStrategy("probing"); reset(); }}>Linear Probing</button>
+                                    </div>
+                                </div>
+                                <div>
                                     <label className="ctrl-label">Select Hash Algorithm</label>
                                     <select className="ctrl-select" value={hashAlgo} onChange={e => setHashAlgo(e.target.value)} disabled={isRunning}>
                                         <option value="division">Division Method (Modulo)</option>
@@ -344,7 +394,7 @@ export default function HashingVisualization() {
                                 <div className="algo-card">
                                     <div className="algo-title">{HASH_FUNCTIONS[hashAlgo].name}</div>
                                     <div className="algo-desc">{HASH_FUNCTIONS[hashAlgo].desc}</div>
-                                    <div className="algo-formula">{HASH_FUNCTIONS[hashAlgo].formula}</div>
+                                    <div className="theory-formula">{HASH_FUNCTIONS[hashAlgo].formula}</div>
                                 </div>
                                 <div>
                                     <label className="ctrl-label">Table Size (Default: 10)</label>
@@ -404,13 +454,15 @@ export default function HashingVisualization() {
                     <div className="theory-accordion">
                         {HASHING_THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" style={{ fontSize: 16, padding: "20px 24px" }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                <button className="accordion-trigger" style={{ fontSize: 18, padding: "24px 28px", fontWeight: 700 }} onClick={() => setOpenSection(openSection === i ? null : i)}>
                                     {s.title} 
-                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s" }}>▼</span>
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content" style={{ padding: "0 24px 24px" }}>
-                                        {s.content}
+                                    <div className="accordion-content" style={{ padding: "0 28px 28px" }}>
+                                        <div className="theory-rich-content">
+                                            {s.content}
+                                        </div>
                                     </div>
                                 )}
                             </div>

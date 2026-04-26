@@ -14,49 +14,64 @@ import { useState, useRef, useEffect } from "react";
 ───────────────────────────────────────────────────────────── */
 const S = {
   card: {
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 16,
+    background: "rgba(255,255,255,0.035)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 20,
     overflow: "hidden",
-    transition: "border-color 0.25s",
+    transition: "border-color 0.3s ease",
   },
   sectionLabel: {
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: "0.12em",
+    fontSize: 13,
+    fontWeight: 800,
+    letterSpacing: "0.15em",
     textTransform: "uppercase",
-    marginBottom: 10,
+    marginBottom: 14,
     marginTop: 0,
+    color: "#60a5fa",
   },
   monoBox: {
-    background: "rgba(0,0,0,0.45)",
-    borderRadius: 10,
-    padding: "14px 16px",
-    fontSize: 12.5,
+    background: "rgba(0,0,0,0.5)",
+    borderRadius: 14,
+    padding: "18px 22px",
+    fontSize: 15,
     color: "#a5f3fc",
     overflow: "auto",
     margin: 0,
-    lineHeight: 1.7,
+    lineHeight: 1.8,
     fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-    border: "1px solid rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "inset 0 2px 10px rgba(0,0,0,0.3)",
   },
   exampleBox: {
-    background: "rgba(245,158,11,0.07)",
-    border: "1px solid rgba(245,158,11,0.22)",
-    borderRadius: 10,
-    padding: "12px 16px",
-    marginTop: 14,
+    background: "rgba(245,158,11,0.08)",
+    border: "1px solid rgba(245,158,11,0.3)",
+    borderRadius: 14,
+    padding: "16px 20px",
+    marginTop: 18,
   },
   logBox: {
-    background: "rgba(0,0,0,0.5)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 12,
-    padding: "14px 16px",
-    maxHeight: 220,
+    background: "rgba(0,0,0,0.6)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    borderRadius: 16,
+    padding: "18px 22px",
+    maxHeight: 280,
     overflowY: "auto",
     fontFamily: "'JetBrains Mono', monospace",
-    fontSize: 12,
-    lineHeight: 2,
+    fontSize: 14.5,
+    lineHeight: 2.1,
+    boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
+  },
+  intuitionBox: {
+    background: "rgba(59,130,246,0.08)",
+    borderLeft: "4px solid #3b82f6",
+    borderRadius: "0 14px 14px 0",
+    padding: "18px 24px",
+    marginBottom: 24,
+    fontSize: 15,
+    color: "rgba(255,255,255,0.8)",
+    lineHeight: 1.7,
+    fontStyle: "italic",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
   },
 };
 
@@ -73,11 +88,14 @@ function SortingVisualizer() {
   const [algo, setAlgo] = useState("bubble");
   const [comparing, setComparing] = useState([]);
   const [swapping, setSwapping] = useState([]);
+  const [pivot, setPivot] = useState(null);
   const [sorted, setSorted] = useState([]);
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState([]);
   const stopRef = useRef(false);
   const logEndRef = useRef(null);
+
+  const maxVal = Math.max(...arr, 1);
 
   const addLog = (msg) => setLog((l) => [...l, msg]);
 
@@ -196,25 +214,27 @@ function SortingVisualizer() {
     const array = [...a];
     addLog("Quick Sort started");
     const partition = async (low, high) => {
-      const pivot = array[high];
-      addLog(`Partitioning [${low}..${high}] with pivot ${pivot}`);
+      const pVal = array[high];
+      setPivot(high);
+      addLog(`Partitioning [${low}..${high}] with pivot ${pVal}`);
       setComparing([high]);
       let i = low - 1;
       for (let j = low; j < high; j++) {
         if (stopRef.current) return;
-        setComparing([high, j]); await sleep(200);
-        if (array[j] <= pivot) {
+        setComparing([high, j]); await sleep(400);
+        if (array[j] <= pVal) {
           i++;
           setSwapping([i, j]);
-          addLog(`  Swap ${array[i]} and ${array[j]}`);
+          addLog(`  ${array[j]} <= ${pVal}: swap arr[${i}] and arr[${j}]`);
           [array[i], array[j]] = [array[j], array[i]];
-          setArr([...array]); await sleep(250); setSwapping([]);
+          setArr([...array]); await sleep(400); setSwapping([]);
         }
       }
       setSwapping([i + 1, high]);
-      addLog(`  Place pivot ${pivot} at index ${i + 1}`);
+      addLog(`✅ Pivot ${pVal} settled at index ${i + 1}`);
       [array[i + 1], array[high]] = [array[high], array[i + 1]];
-      setArr([...array]); await sleep(250); setSwapping([]);
+      setArr([...array]); await sleep(400); setSwapping([]);
+      setPivot(null);
       return i + 1;
     };
     const qs = async (low, high) => {
@@ -232,6 +252,7 @@ function SortingVisualizer() {
     await qs(0, array.length - 1);
     setSorted(Array.from({length: array.length}, (_, k) => k));
     setComparing([]);
+    setPivot(null);
     addLog("Quick Sort complete!");
   };
 
@@ -393,87 +414,117 @@ function SortingVisualizer() {
     setRunning(false);
   };
 
-  const max = Math.max(...arr, 1);
-
   return (
     <div>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
-        {["bubble", "selection", "insertion", "quick", "merge", "heap", "radix", "counting"].map((a) => (
-          <button key={a} onClick={() => { if (!running) { setAlgo(a); setLog([]); }}}
+      {/* Intuition Section */}
+      <div style={S.intuitionBox}>
+        <span style={{ color: "#3b82f6", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+        {algo === "bubble" ? "Compares adjacent pairs and 'bubbles' the largest element to the end. Simple but slow." :
+         algo === "selection" ? "Repeatedly finds the minimum element from the unsorted part and puts it at the beginning." :
+         algo === "insertion" ? "Builds the sorted array one item at a time by inserting the current element into its correct place." :
+         algo === "quick" ? "Uses a pivot to partition the array into smaller and larger elements, then sorts them recursively." :
+         algo === "merge" ? "Divides the array into halves, sorts them, and then merges them back together. Guaranteed O(n log n)." :
+         algo === "heap" ? "Builds a Max-Heap structure and repeatedly extracts the maximum element to sort the array." :
+         algo === "radix" ? "Sorts numbers digit by digit from least to most significant. Highly efficient for integers." :
+         "Counts the frequency of each element and uses it to calculate their final positions. O(n+k) time."}
+      </div>
+
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
+        <label style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          Algorithm:
+          <select
+            value={algo}
+            onChange={(e) => { if (!running) { setAlgo(e.target.value); setLog([]); } }}
+            className="ctrl-select"
             style={{
-              padding: "7px 18px", borderRadius: 8, border: `1px solid ${algo === a ? "#3b82f6" : "rgba(255,255,255,0.1)"}`,
-              background: algo === a ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
-              color: algo === a ? "#60a5fa" : "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, cursor: "pointer"
-            }}>
-            {a.charAt(0).toUpperCase() + a.slice(1)} Sort
-          </button>
-        ))}
-        <button onClick={randomize} disabled={running}
-          style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer" }}>
+              background: "rgba(59,130,246,0.12)",
+              border: "1px solid rgba(59,130,246,0.4)",
+              borderRadius: 10, padding: "8px 32px 8px 14px",
+              color: "#60a5fa", fontSize: 13.5, fontWeight: 700,
+              cursor: "pointer", outline: "none",
+              appearance: "none",
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%2360a5fa'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 10px center"
+            }}
+          >
+            {["bubble", "selection", "insertion", "quick", "merge", "heap", "radix", "counting"].map((a) => (
+              <option key={a} value={a}>{a.charAt(0).toUpperCase() + a.slice(1)} Sort</option>
+            ))}
+          </select>
+        </label>
+        <button className="ctrl-input" onClick={randomize} disabled={running}
+          style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer" }}>
           Randomize
         </button>
-        <button onClick={reset} disabled={running}
-          style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer" }}>
-          Reset
-        </button>
-        <button onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
-          style={{
-            padding: "7px 22px", borderRadius: 8, border: "none",
-            background: running ? "rgba(239,68,68,0.2)" : "rgba(59,130,246,0.9)",
-            color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", marginLeft: "auto"
-          }}>
-          {running ? "Stop" : "Run"}
+        <button className="btn-primary" onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
+          style={{ padding: "8px 24px", borderRadius: 10, background: running ? "rgba(239,68,68,0.8)" : "rgba(59,130,246,0.9)", marginLeft: "auto", fontWeight: 800 }}>
+          {running ? "⏹ Stop" : "▶ Run Sort"}
         </button>
       </div>
 
-      {/* Bar chart */}
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 180, padding: "0 4px", marginBottom: 20, background: "rgba(0,0,0,0.2)", borderRadius: 10, paddingTop: 24 }}>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 200, padding: "20px 10px", marginBottom: 24, background: "rgba(0,0,0,0.2)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
         {arr.map((v, i) => {
-          let color = "#3b82f6";
-          if (sorted.includes(i)) color = "#34d399";
-          else if (swapping.includes(i)) color = "#fb923c";
-          else if (comparing.includes(i)) color = "#a78bfa";
+          const isSorted = sorted.includes(i);
+          const isSwap = swapping.includes(i);
+          const isComp = comparing.includes(i);
+          const isPiv = pivot === i;
+
+          let color = "rgba(59,130,246,0.3)";
+          if (isSorted) color = "linear-gradient(180deg, #10b981, #059669)";
+          else if (isSwap) color = "linear-gradient(180deg, #ef4444, #b91c1c)";
+          else if (isPiv) color = "linear-gradient(180deg, #a78bfa, #8b5cf6)";
+          else if (isComp) color = "linear-gradient(180deg, #3b82f6, #2563eb)";
+          
           return (
             <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
-              <span style={{ fontSize: 11, color: "#f1f5f9", fontWeight: 700, marginBottom: 4 }}>{v}</span>
+              <span style={{ fontSize: 11, color: isPiv ? "#a78bfa" : "#f1f5f9", fontWeight: isPiv ? 900 : 800, marginBottom: 6 }}>{v}</span>
               <div style={{
-                width: "100%", background: color, borderRadius: "4px 4px 0 0",
-                height: `${(v / max) * 130}px`, minHeight: 8,
-                transition: "height 0.2s, background 0.2s",
+                width: "100%", background: color, borderRadius: "6px 6px 0 0",
+                height: `${(v / maxVal) * 140}px`, minHeight: 8,
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: swapping.includes(i) ? "0 0 15px rgba(249,115,22,0.4)" : "none"
               }} />
             </div>
           );
         })}
       </div>
 
-      {/* Legend */}
-      <div style={{ display: "flex", gap: 18, fontSize: 12, marginBottom: 18 }}>
-        {[["#a78bfa", "Comparing"], ["#fb923c", "Swapping"], ["#34d399", "Sorted"], ["#3b82f6", "Unsorted"]].map(([c, l]) => (
-          <span key={l} style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.6)" }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: c, display: "inline-block" }} /> {l}
+      <div style={{ display: "flex", gap: 20, fontSize: 12, marginBottom: 24, justifyContent: "center", background: "rgba(255,255,255,0.02)", padding: "12px 20px", borderRadius: 12 }}>
+        {[["#a78bfa", "Pivot"], ["#3b82f6", "Comparing"], ["#ef4444", "Swapping"], ["#10b981", "Sorted"]].map(([c, l]) => (
+          <span key={l} style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>
+            <span style={{ width: 12, height: 12, borderRadius: 3, background: c, display: "inline-block" }} /> {l}
           </span>
         ))}
       </div>
 
-      {/* Log */}
-      <p style={{ ...S.sectionLabel, color: "#94a3b8" }}>Execution Log</p>
-      <div style={S.logBox}>
-        {log.length === 0 ? <span style={{ color: "rgba(255,255,255,0.3)" }}>Press Run to start...</span> :
-          log.map((entry, i) => (
-            <div key={i} style={{ color: entry.startsWith("  ") ? "rgba(255,255,255,0.55)" : "#60a5fa" }}>
-              <span style={{ color: "rgba(255,255,255,0.25)", marginRight: 10 }}>{String(i + 1).padStart(2, "0")}</span>
-              {entry}
-            </div>
-          ))}
-        <div ref={logEndRef} />
+      <div className="log-panel" style={{ height: 250 }}>
+        <div className="log-header">
+           <span style={{ color: "#3b82f6" }}>⚡</span> Sorting Execution Log
+        </div>
+        <div className="log-content thin-scroll">
+          {log.length === 0 ? (
+            <div className="log-line" style={{ opacity: 0.4 }}>Select an algorithm and press Run...</div>
+          ) : (
+            log.map((entry, i) => {
+              let className = "log-line";
+              if (entry.includes("Pass") || !entry.startsWith("  ")) className += " log-highlight";
+              if (entry.includes("complete")) className += " log-success";
+              return (
+                <div key={i} className={className}>
+                  <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                  {entry}
+                </div>
+              );
+            })
+          )}
+          <div ref={logEndRef} />
+        </div>
       </div>
     </div>
   );
 }
 
-/* =============================================================
-   SEARCHING VISUALIZER
-============================================================= */
 function SearchingVisualizer() {
   const [arr] = useState([2, 7, 11, 13, 17, 23, 29, 37, 41, 47]);
   const [target, setTarget] = useState(23);
@@ -604,87 +655,96 @@ function SearchingVisualizer() {
 
   return (
     <div>
+      <div style={{ ...S.intuitionBox, background: "rgba(6,182,212,0.08)", borderLeft: "4px solid #06b6d4" }}>
+        <span style={{ color: "#22d3ee", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+        {algo === "binary" ? "Strategy: Divide and Conquer. By repeatedly splitting the sorted array in half, we find the target in logarithmic time O(log n)." :
+         algo === "linear" ? "Strategy: Brute Force. We check every single element one by one from the start. Simple, but slow for large datasets O(n)." :
+         algo === "sentinel" ? "Strategy: Optimization. We place a 'sentinel' at the end to avoid checking the array boundary in every iteration, slightly improving speed." :
+         "Strategy: Golden Ratio. Similar to Binary Search but uses Fibonacci numbers to divide the array, potentially faster on certain hardware caches."}
+      </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
-        {["binary", "linear", "sentinel", "fibonacci"].map((a) => (
-          <button key={a} onClick={() => { if (!running) { setAlgo(a); setLog([]); setHighlighted({ low: -1, high: -1, mid: -1, found: -1 }); }}}
-            style={{
-              padding: "7px 18px", borderRadius: 8, border: `1px solid ${algo === a ? "#06b6d4" : "rgba(255,255,255,0.1)"}`,
-              background: algo === a ? "rgba(6,182,212,0.15)" : "rgba(255,255,255,0.04)",
-              color: algo === a ? "#22d3ee" : "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, cursor: "pointer"
-            }}>
-            {a.charAt(0).toUpperCase() + a.slice(1)} Search
-          </button>
-        ))}
-        <label style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
+        <label style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          Algorithm:
+          <select value={algo} onChange={(e) => { if (!running) { setAlgo(e.target.value); setLog([]); setHighlighted({ low: -1, high: -1, mid: -1, found: -1 }); } }}
+            className="ctrl-select"
+            style={{ background: "rgba(6,182,212,0.12)", border: "1px solid rgba(6,182,212,0.4)", borderRadius: 10, padding: "8px 32px 8px 14px", color: "#22d3ee", fontSize: 13.5, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%2322d3ee'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}>
+            <option value="binary">Binary Search</option>
+            <option value="linear">Linear Search</option>
+            <option value="sentinel">Sentinel Search</option>
+            <option value="fibonacci">Fibonacci Search</option>
+          </select>
+        </label>
+        <label style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
           Target:
           <input type="number" value={target} onChange={(e) => setTarget(Number(e.target.value))}
-            style={{ width: 60, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6, padding: "4px 8px", color: "#f1f5f9", fontSize: 13 }} />
+            className="ctrl-input"
+            style={{ width: 70, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "5px 10px", color: "#f1f5f9", fontSize: 13 }} />
         </label>
-        <button onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
-          style={{ padding: "7px 22px", borderRadius: 8, border: "none", background: running ? "rgba(239,68,68,0.2)" : "rgba(6,182,212,0.9)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", marginLeft: "auto" }}>
-          {running ? "Stop" : "Run"}
+        <button className="btn-primary" onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
+          style={{ padding: "8px 24px", borderRadius: 10, background: running ? "rgba(239,68,68,0.8)" : "rgba(6,182,212,0.9)", marginLeft: "auto", fontWeight: 800 }}>
+          {running ? "⏹ Stop" : "▶ Run Search"}
         </button>
       </div>
 
-      {/* Array display */}
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24, justifyContent: "center" }}>
         {arr.map((v, i) => {
           const isFound = highlighted.found === i;
           const isMid = highlighted.mid === i;
           const inRange = highlighted.low >= 0 && i >= highlighted.low && i <= highlighted.high;
-          let bg = "rgba(255,255,255,0.05)", border = "rgba(255,255,255,0.1)", color = "rgba(255,255,255,0.7)";
-          if (isFound) { bg = "rgba(52,211,153,0.2)"; border = "#34d399"; color = "#34d399"; }
+          let bg = "rgba(255,255,255,0.03)", border = "rgba(255,255,255,0.08)", color = "rgba(255,255,255,0.4)";
+          if (isFound) { bg = "rgba(52,211,153,0.15)"; border = "#34d399"; color = "#34d399"; }
           else if (isMid) { bg = "rgba(167,139,250,0.2)"; border = "#a78bfa"; color = "#a78bfa"; }
           else if (inRange) { bg = "rgba(6,182,212,0.1)"; border = "rgba(6,182,212,0.4)"; color = "#22d3ee"; }
           return (
             <div key={i} style={{
-              width: 56, height: 56, borderRadius: 8, display: "flex", flexDirection: "column",
+              width: 60, height: 60, borderRadius: 12, display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center", background: bg,
-              border: `1px solid ${border}`, transition: "all 0.3s"
+              border: `2px solid ${border}`, transition: "all 0.3s",
+              boxShadow: isMid || isFound ? "0 0 15px currentColor" : "none"
             }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color }}>{v}</span>
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>[{i}]</span>
+              <span style={{ fontSize: 17, fontWeight: 800, color }}>{v}</span>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", marginTop: 2 }}>[{i}]</span>
             </div>
           );
         })}
       </div>
 
-      {/* State indicator */}
-      {highlighted.low >= 0 && (
-        <div style={{ display: "flex", gap: 16, fontSize: 12, marginBottom: 16, color: "rgba(255,255,255,0.5)" }}>
-          <span>Low: <strong style={{ color: "#60a5fa" }}>{highlighted.low}</strong></span>
-          <span>Mid: <strong style={{ color: "#a78bfa" }}>{highlighted.mid}</strong></span>
-          <span>High: <strong style={{ color: "#60a5fa" }}>{highlighted.high}</strong></span>
-        </div>
-      )}
-
-      {/* Legend */}
-      <div style={{ display: "flex", gap: 16, fontSize: 12, marginBottom: 18 }}>
-        {[["#22d3ee", "Search Range"], ["#a78bfa", "Mid / Current"], ["#34d399", "Found"]].map(([c, l]) => (
-          <span key={l} style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.6)" }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: c, display: "inline-block" }} /> {l}
+      <div style={{ display: "flex", gap: 18, fontSize: 12, marginBottom: 24, background: "rgba(0,0,0,0.2)", padding: "10px 16px", borderRadius: 10, alignSelf: "center" }}>
+        {[["#22d3ee", "Search Range"], ["#a78bfa", "Pivot/Current"], ["#34d399", "Found"]].map(([c, l]) => (
+          <span key={l} style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>
+            <span style={{ width: 12, height: 12, borderRadius: 3, background: c, display: "inline-block" }} /> {l}
           </span>
         ))}
       </div>
 
-      <p style={{ ...S.sectionLabel, color: "#94a3b8" }}>Execution Log</p>
-      <div style={S.logBox}>
-        {log.length === 0 ? <span style={{ color: "rgba(255,255,255,0.3)" }}>Press Run to start...</span> :
-          log.map((entry, i) => (
-            <div key={i} style={{ color: entry.startsWith("  ") ? "rgba(255,255,255,0.55)" : "#22d3ee" }}>
-              <span style={{ color: "rgba(255,255,255,0.25)", marginRight: 10 }}>{String(i + 1).padStart(2, "0")}</span>
-              {entry}
-            </div>
-          ))}
-        <div ref={logEndRef} />
+      <div className="log-panel" style={{ height: 250 }}>
+        <div className="log-header" style={{ borderColor: "rgba(6,182,212,0.2)" }}>
+           <span style={{ color: "#22d3ee" }}>⚡</span> Searching Execution Log
+        </div>
+        <div className="log-content thin-scroll">
+          {log.length === 0 ? (
+            <div className="log-line" style={{ opacity: 0.4 }}>Select an algorithm and press Run...</div>
+          ) : (
+            log.map((entry, i) => {
+              let className = "log-line";
+              if (entry.includes("Found") || entry.includes("not found")) className += " log-highlight";
+              if (entry.includes("Found")) className += " log-success";
+              return (
+                <div key={i} className={className}>
+                  <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                  {entry}
+                </div>
+              );
+            })
+          )}
+          <div ref={logEndRef} />
+        </div>
       </div>
     </div>
   );
 }
 
-/* =============================================================
-   GREEDY VISUALIZER — Fractional Knapsack
-============================================================= */
 function GreedyVisualizer() {
   const [algo, setAlgo] = useState("fractional");
   const [items] = useState([
@@ -804,105 +864,143 @@ function GreedyVisualizer() {
     setRunning(false);
   };
 
-  const totalValue = steps.reduce((s, it) => s + it.value * it.fraction, 0);
-
   return (
     <div>
+      <div style={S.intuitionBox}>
+        <span style={{ color: "#34d399", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+        {algo === "fractional" ? "Greedily picks items with the highest value-to-weight ratio to maximize value within capacity." :
+         algo === "job" ? "Greedily schedules highest-profit jobs in the latest possible available time slots." :
+         "Builds an optimal prefix code tree by repeatedly merging nodes with the two lowest frequencies."}
+      </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
-        {["fractional", "job", "huffman"].map((a) => (
-          <button key={a} onClick={() => { if (!running) { setAlgo(a); setLog([]); setSteps([]); setDone(false); }}}
-            style={{
-              padding: "7px 18px", borderRadius: 8, border: `1px solid ${algo === a ? "#10b981" : "rgba(255,255,255,0.1)"}`,
-              background: algo === a ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
-              color: algo === a ? "#34d399" : "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, cursor: "pointer"
-            }}>
-            {a === "fractional" ? "Fractional Knapsack" : a === "job" ? "Job Sequencing" : "Huffman Coding"}
-          </button>
-        ))}
-        <button onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
-          style={{ padding: "7px 22px", borderRadius: 8, border: "none", background: running ? "rgba(239,68,68,0.2)" : "rgba(16,185,129,0.85)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", marginLeft: "auto" }}>
-          {running ? "Stop" : "Run"}
+        <label style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          Algorithm:
+          <select value={algo} onChange={(e) => { if (!running) { setAlgo(e.target.value); setLog([]); setSteps([]); setDone(false); } }}
+            className="ctrl-select"
+            style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.4)", borderRadius: 10, padding: "8px 32px 8px 14px", color: "#34d399", fontSize: 13.5, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%2334d399'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}>
+            <option value="fractional">Fractional Knapsack</option>
+            <option value="job">Job Sequencing</option>
+            <option value="huffman">Huffman Coding</option>
+          </select>
+        </label>
+        <button className="btn-primary" onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
+          style={{ padding: "8px 24px", borderRadius: 10, background: running ? "rgba(239,68,68,0.8)" : "rgba(16,185,129,0.9)", marginLeft: "auto", fontWeight: 800 }}>
+          {running ? "⏹ Stop Execution" : "▶ Run Visualizer"}
         </button>
       </div>
 
       {algo === "fractional" && (
-        <>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginBottom: 16 }}>
-            Items: {items.map(i => `(v:${i.value}, w:${i.weight})`).join(", ")} | Capacity: {capacity}
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+        <div style={{ background: "rgba(0,0,0,0.2)", padding: 24, borderRadius: 16, marginBottom: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {items.map((it) => {
               const taken = steps.find(s => s.id === it.id);
               const frac = taken ? taken.fraction : 0;
               return (
                 <div key={it.id}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 6 }}>
-                    <span>Item {it.id}: value={it.value}, weight={it.weight}, ratio={+(it.value / it.weight).toFixed(2)}</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "rgba(255,255,255,0.7)", marginBottom: 8, fontWeight: 600 }}>
+                    <span>Item {it.id}: value=${it.value}, weight=${it.weight}, ratio=${+(it.value / it.weight).toFixed(2)}</span>
                     <span style={{ color: frac > 0 ? "#34d399" : "rgba(255,255,255,0.3)" }}>
-                      {frac > 0 ? `${(frac * 100).toFixed(1)}% taken` : "Not taken yet"}
+                      {frac > 0 ? `${(frac * 100).toFixed(1)}% taken` : "Pending..."}
                     </span>
                   </div>
-                  <div style={{ height: 18, background: "rgba(255,255,255,0.07)", borderRadius: 6, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${frac * 100}%`, background: "#10b981", borderRadius: 6, transition: "width 0.6s ease" }} />
+                  <div style={{ height: 22, background: "rgba(255,255,255,0.05)", borderRadius: 11, overflow: "hidden", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div style={{ height: "100%", width: `${frac * 100}%`, background: "linear-gradient(90deg, #059669, #10b981)", borderRadius: 11, transition: "width 0.8s cubic-bezier(0.4, 0, 0.2, 1)" }} />
                   </div>
                 </div>
               );
             })}
           </div>
           {done && (
-            <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
-              <span style={{ color: "#34d399", fontWeight: 700, fontSize: 15 }}>Total Value: {steps.reduce((s, it) => s + it.value * it.fraction, 0).toFixed(2)}</span>
-              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginLeft: 16 }}>Optimal Greedy Solution</span>
+            <div style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 12, padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "#34d399", fontWeight: 800, fontSize: 16 }}>💰 Optimal Total Value: {steps.reduce((s, it) => s + it.value * it.fraction, 0).toFixed(2)}</span>
+              <span style={{ color: "rgba(52,211,153,0.5)", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Optimal Greedy Solution</span>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {algo === "job" && (
-        <>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginBottom: 16 }}>
-            Jobs: {jobs.map(j => `${j.id}(d:${j.deadline}, p:${j.profit})`).join(", ")}
+        <div style={{ background: "rgba(0,0,0,0.2)", padding: 24, borderRadius: 16, marginBottom: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 20, textAlign: "center" }}>
+            Available Jobs (Deadline, Profit): {jobs.map(j => `[${j.id}: ${j.deadline}, ${j.profit}]`).join(", ")}
           </p>
-          <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+          <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", justifyContent: "center" }}>
             {new Array(Math.max(...jobs.map(j => j.deadline))).fill(0).map((_, i) => (
-              <div key={i} style={{ flex: 1, minHeight: 60, background: steps[i] ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.03)", border: `1px solid ${steps[i] ? "#10b981" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Slot {i}-{i+1}</span>
+              <div key={i} style={{ 
+                flex: "1 1 120px", minHeight: 90, background: steps[i] ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.02)", 
+                border: `2px dashed ${steps[i] ? "#10b981" : "rgba(255,255,255,0.1)"}`, 
+                borderRadius: 14, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                transition: "all 0.4s", boxShadow: steps[i] ? "0 0 20px rgba(16,185,129,0.2)" : "none"
+              }}>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 6, fontWeight: 700 }}>SLOT {i+1}</span>
                 {steps[i] ? (
-                  <span style={{ fontSize: 16, fontWeight: 700, color: "#34d399" }}>Job {steps[i].id}</span>
+                  <>
+                    <span style={{ fontSize: 18, fontWeight: 900, color: "#34d399" }}>Job {steps[i].id}</span>
+                    <span style={{ fontSize: 12, color: "#10b981", marginTop: 4, fontWeight: 600 }}>+${steps[i].profit}</span>
+                  </>
                 ) : (
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>Empty</span>
+                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.15)", fontWeight: 500 }}>Available</span>
                 )}
               </div>
             ))}
           </div>
-        </>
+          {done && (
+            <div style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 12, padding: "16px 20px", textAlign: "center" }}>
+               <span style={{ color: "#34d399", fontWeight: 800, fontSize: 17 }}>🏆 Maximum Profit Possible: ${steps.reduce((s, j) => s + (j ? j.profit : 0), 0)}</span>
+            </div>
+          )}
+        </div>
       )}
 
       {algo === "huffman" && (
-        <>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginBottom: 16 }}>
-            String: "{huffmanStr}"
+        <div style={{ background: "rgba(0,0,0,0.2)", padding: 24, borderRadius: 16, marginBottom: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 20, textAlign: "center" }}>
+            Encoding String: "{huffmanStr}" (Min-Priority Queue Merging)
           </p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20, justifyContent: "center" }}>
             {steps.map((node, i) => (
-              <div key={i} style={{ padding: "8px 12px", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 6, display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{node.char}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#10b981" }}>{node.freq}</span>
+              <div key={i} style={{ 
+                padding: "12px 18px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", 
+                borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.2)", transition: "all 0.5s ease"
+              }}>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontWeight: 700 }}>{node.char.length > 5 ? "Tree Node" : node.char}</span>
+                <span style={{ fontSize: 18, fontWeight: 900, color: "#10b981" }}>{node.freq}</span>
               </div>
             ))}
           </div>
-        </>
+          {done && (
+             <div style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 12, padding: "16px 20px", textAlign: "center" }}>
+               <span style={{ color: "#34d399", fontWeight: 800 }}>Huffman Encoding Tree Rooted successfully with freq: {steps[0]?.freq}</span>
+            </div>
+          )}
+        </div>
       )}
 
-      <p style={{ ...S.sectionLabel, color: "#94a3b8" }}>Execution Log</p>
-      <div style={S.logBox}>
-        {log.length === 0 ? <span style={{ color: "rgba(255,255,255,0.3)" }}>Press Run to start...</span> :
-          log.map((entry, i) => (
-            <div key={i} style={{ color: entry.startsWith("  ") ? "rgba(255,255,255,0.55)" : "#34d399" }}>
-              <span style={{ color: "rgba(255,255,255,0.25)", marginRight: 10 }}>{String(i + 1).padStart(2, "0")}</span>{entry}
-            </div>
-          ))}
-        <div ref={logEndRef} />
+      {/* Standardized Execution Log */}
+      <div className="log-panel" style={{ height: 250 }}>
+        <div className="log-header">
+           <span style={{ color: "#10b981" }}>⚡</span> Greedy Execution Log
+        </div>
+        <div className="log-content thin-scroll">
+          {log.length === 0 ? (
+            <div className="log-line" style={{ opacity: 0.4 }}>Waiting for execution...</div>
+          ) : (
+            log.map((entry, i) => {
+              let className = "log-line";
+              if (entry.includes("|") || !entry.startsWith("  ")) className += " log-highlight";
+              if (entry.includes("Total") || entry.includes("Complete")) className += " log-success";
+              return (
+                <div key={i} className={className}>
+                  <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                  {entry}
+                </div>
+              );
+            })
+          )}
+          <div ref={logEndRef} />
+        </div>
       </div>
     </div>
   );
@@ -1054,50 +1152,61 @@ function DPVisualizer() {
 
   return (
     <div>
+      {/* Intuition Section */}
+      <div style={{ ...S.intuitionBox, background: "rgba(245,158,11,0.08)", borderLeft: "4px solid #f59e0b" }}>
+        <span style={{ color: "#fcd34d", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+        {algo === "knapsack" ? "Strategy: Optimal Substructure. We build a table where each cell represents the max value for a given capacity and available items. O(n*W)." :
+         algo === "lcs" ? "Strategy: Overlapping Subproblems. We find the longest common subsequence by comparing characters and using previously computed results. O(m*n)." :
+         algo === "mcm" ? "Strategy: Chain Matrix Multiplications. We find the most efficient way to multiply matrices by minimizing the total scalar multiplications. O(n³)." :
+         "Strategy: State Compression. We use bitmask DP to solve the Traveling Salesperson Problem, finding the shortest tour that visits all cities. O(n² * 2ⁿ)."}
+      </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
-        {["knapsack", "lcs", "mcm", "tsp"].map((a) => (
-          <button key={a} onClick={() => { if (!running) { setAlgo(a); reset(); }}}
-            style={{
-              padding: "7px 18px", borderRadius: 8, border: `1px solid ${algo === a ? "#f59e0b" : "rgba(255,255,255,0.1)"}`,
-              background: algo === a ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.04)",
-              color: algo === a ? "#fcd34d" : "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, cursor: "pointer"
-            }}>
-            {a === "knapsack" ? "0/1 Knapsack" : a === "lcs" ? "LCS" : a === "mcm" ? "Matrix Chain Mul" : "TSP"}
-          </button>
-        ))}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          <button onClick={reset} disabled={running} style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer" }}>Reset</button>
-          <button onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
-            style={{ padding: "7px 22px", borderRadius: 8, border: "none", background: running ? "rgba(239,68,68,0.2)" : "rgba(245,158,11,0.9)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            {running ? "Stop" : "Run DP"}
+        <label style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          Algorithm:
+          <select value={algo} onChange={(e) => { if (!running) { setAlgo(e.target.value); reset(); } }}
+            className="ctrl-select"
+            style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.4)", borderRadius: 10, padding: "8px 32px 8px 14px", color: "#fcd34d", fontSize: 13.5, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%23fcd34d'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}>
+            <option value="knapsack">0/1 Knapsack</option>
+            <option value="lcs">LCS (Longest Common Subsequence)</option>
+            <option value="mcm">Matrix Chain Multiplication</option>
+            <option value="tsp">TSP (Travelling Salesman)</option>
+          </select>
+        </label>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+          <button className="ctrl-input" onClick={reset} disabled={running} style={{ padding: "8px 18px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer" }}>Reset</button>
+          <button className="btn-primary" onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
+            style={{ padding: "8px 24px", borderRadius: 10, background: running ? "rgba(239,68,68,0.8)" : "rgba(245,158,11,0.9)", fontWeight: 800 }}>
+            {running ? "⏹ Stop Execution" : "▶ Run DP"}
           </button>
         </div>
       </div>
 
       {table.length > 0 && (
-        <div style={{ overflowX: "auto", marginBottom: 20 }}>
-          <table style={{ borderCollapse: "separate", borderSpacing: 3, fontSize: 12 }}>
+        <div style={{ overflowX: "auto", marginBottom: 24, padding: 12, background: "rgba(0,0,0,0.3)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <table style={{ borderCollapse: "separate", borderSpacing: 4, fontSize: 13, margin: "0 auto" }}>
             <thead>
               <tr>
-                <td style={{ padding: "6px 10px", color: "rgba(255,255,255,0.3)", fontSize: 11 }}>{headers.corner}</td>
+                <td style={{ padding: "8px 12px", color: "rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 800 }}>{headers.corner}</td>
                 {headers.top.map((w, idx) => (
-                  <td key={idx} style={{ padding: "6px 10px", color: "#60a5fa", fontWeight: 700, textAlign: "center" }}>{w}</td>
+                  <td key={idx} style={{ padding: "8px 12px", color: "#60a5fa", fontWeight: 800, textAlign: "center" }}>{w}</td>
                 ))}
               </tr>
             </thead>
             <tbody>
               {table.map((row, i) => (
                 <tr key={i}>
-                  <td style={{ padding: "6px 10px", color: "#f59e0b", fontWeight: 700 }}>{headers.side[i]}</td>
+                  <td style={{ padding: "8px 12px", color: "#f59e0b", fontWeight: 800 }}>{headers.side[i]}</td>
                   {row.map((v, j) => {
                     const isActive = active.i === i && active.j === j;
                     return (
                       <td key={j} style={{
-                        padding: "7px 12px", textAlign: "center", borderRadius: 6, fontWeight: 600,
-                        background: isActive ? "rgba(245,158,11,0.3)" : v !== null ? "rgba(255,255,255,0.05)" : "transparent",
+                        padding: "10px 14px", textAlign: "center", borderRadius: 8, fontWeight: 700,
+                        background: isActive ? "rgba(245,158,11,0.25)" : v !== null ? "rgba(255,255,255,0.03)" : "transparent",
                         color: isActive ? "#fcd34d" : v !== null ? "#f1f5f9" : "transparent",
-                        border: isActive ? "1px solid rgba(245,158,11,0.5)" : v !== null ? "1px solid rgba(255,255,255,0.05)" : "none",
-                        transition: "background 0.2s", minWidth: 36
+                        border: isActive ? "1px solid rgba(245,158,11,0.5)" : v !== null ? "1px solid rgba(255,255,255,0.08)" : "none",
+                        transition: "all 0.15s ease", minWidth: 42,
+                        boxShadow: isActive ? "0 0 15px rgba(245,158,11,0.2)" : "none"
                       }}>
                         {v !== null ? v : ""}
                       </td>
@@ -1111,20 +1220,34 @@ function DPVisualizer() {
       )}
 
       {result !== null && (
-        <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
-          <span style={{ color: "#fcd34d", fontWeight: 700, fontSize: 15 }}>Result: {result}</span>
+        <div style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 12, padding: "16px 20px", marginBottom: 24, textAlign: "center" }}>
+          <span style={{ color: "#fcd34d", fontWeight: 800, fontSize: 17 }}>💰 Result: {result}</span>
         </div>
       )}
 
-      <p style={{ ...S.sectionLabel, color: "#94a3b8" }}>Execution Log</p>
-      <div style={S.logBox}>
-        {log.length === 0 ? <span style={{ color: "rgba(255,255,255,0.3)" }}>Press Run DP to start...</span> :
-          log.map((entry, i) => (
-            <div key={i} style={{ color: entry.startsWith("  ") ? "rgba(255,255,255,0.55)" : "#fcd34d" }}>
-              {entry !== "" && <><span style={{ color: "rgba(255,255,255,0.25)", marginRight: 10 }}>{String(i + 1).padStart(2, "0")}</span>{entry}</>}
-            </div>
-          ))}
-        <div ref={logEndRef} />
+      {/* Standardized Execution Log */}
+      <div className="log-panel" style={{ height: 250 }}>
+        <div className="log-header" style={{ borderColor: "rgba(245,158,11,0.2)" }}>
+           <span style={{ color: "#f59e0b" }}>⚡</span> DP Execution Log
+        </div>
+        <div className="log-content thin-scroll">
+          {log.length === 0 ? (
+            <div className="log-line" style={{ opacity: 0.4 }}>Waiting for execution...</div>
+          ) : (
+            log.map((entry, i) => {
+              let className = "log-line";
+              if (entry.includes("|") || !entry.startsWith("  ")) className += " log-highlight";
+              if (entry.includes("Optimal") || entry.includes("Result") || entry.includes("complete")) className += " log-success";
+              return (
+                <div key={i} className={className}>
+                  <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                  {entry}
+                </div>
+              );
+            })
+          )}
+          <div ref={logEndRef} />
+        </div>
       </div>
     </div>
   );
@@ -1145,6 +1268,8 @@ function GraphVisualizer() {
   const [activeEdges, setActiveEdges] = useState(new Set());
   const [queue, setQueue] = useState([]);
   const [current, setCurrent] = useState(null);
+  const [checkingEdge, setCheckingEdge] = useState(null); // [u, v]
+  const [nodeDistances, setNodeDistances] = useState({});
   const [log, setLog] = useState([]);
   const [running, setRunning] = useState(false);
   const stopRef = useRef(false);
@@ -1158,114 +1283,285 @@ function GraphVisualizer() {
 
   const reset = () => {
     stopRef.current = true;
-    setVisited(new Set()); setActiveEdges(new Set()); setQueue([]); setCurrent(null); setLog([]); setRunning(false);
+    setVisited(new Set()); setActiveEdges(new Set()); setQueue([]); 
+    setCurrent(null); setCheckingEdge(null); setNodeDistances({});
+    setLog([]); setRunning(false);
   };
 
   const runBFS = async () => {
     const vis = new Set();
     const q = ["A"];
-    const logs = ["BFS starting from node A"];
+    const logs = ["Starting Breadth-First Search (BFS) from node A."];
+    logs.push("BFS uses a Queue (First-In, First-Out) to explore nodes layer by layer.");
     setQueue([...q]);
+    setLog([...logs]);
+    await sleep(800);
+
     while (q.length > 0) {
       if (stopRef.current) return;
       const node = q.shift();
-      if (vis.has(node)) continue;
-      vis.add(node); setCurrent(node); setVisited(new Set(vis));
-      logs.push(`Visit ${node} | Queue: [${q.join(", ")}]`); setLog([...logs]); await sleep(700);
-      for (const {n: nb} of ADJ[node]) {
-        if (!vis.has(nb)) { q.push(nb); logs.push(`  Enqueue neighbor ${nb}`); }
+      setQueue([...q]);
+      
+      if (vis.has(node)) {
+        logs.push(`Node ${node} already visited, skipping.`);
+        setLog([...logs]);
+        continue;
       }
-      setQueue([...q]); setLog([...logs]);
+
+      logs.push(`Visiting node ${node}. It's the next in line from the queue.`);
+      vis.add(node); setCurrent(node); setVisited(new Set(vis));
+      setLog([...logs]);
+      await sleep(800);
+
+      for (const {n: nb} of ADJ[node]) {
+        setCheckingEdge([node, nb]);
+        await sleep(300);
+        if (!vis.has(nb)) {
+          q.push(nb);
+          logs.push(`  Found neighbor ${nb}. Adding to queue for later exploration.`);
+          setQueue([...q]);
+          setLog([...logs]);
+          await sleep(400);
+        } else {
+          logs.push(`  Neighbor ${nb} is already visited.`);
+          setLog([...logs]);
+        }
+      }
+      setCheckingEdge(null);
     }
-    setCurrent(null); logs.push("BFS complete!"); setLog([...logs]);
+    setCurrent(null); logs.push("BFS Complete! All reachable nodes have been explored layer-by-layer."); 
+    setLog([...logs]);
   };
 
   const runDFS = async (node, vis, logs) => {
-    if (stopRef.current || vis.has(node)) return;
-    vis.add(node); setCurrent(node); setVisited(new Set(vis));
-    logs.push(`Visit ${node}`); setLog([...logs]); await sleep(700);
-    for (const {n: nb} of ADJ[node]) {
-      if (!vis.has(nb)) { logs.push(`  Recurse to ${nb}`); setLog([...logs]); await runDFS(nb, vis, logs); }
+    if (stopRef.current) return;
+    if (vis.has(node)) {
+      logs.push(`  Already visited ${node}, backtracking...`);
+      setLog([...logs]);
+      return;
     }
+
+    logs.push(`Visiting node ${node}. Moving deeper into the graph.`);
+    vis.add(node); setCurrent(node); setVisited(new Set(vis));
+    setLog([...logs]);
+    await sleep(800);
+
+    for (const {n: nb} of ADJ[node]) {
+      if (stopRef.current) return;
+      setCheckingEdge([node, nb]);
+      logs.push(`  Checking edge from ${node} to ${nb}...`);
+      setLog([...logs]);
+      await sleep(400);
+
+      if (!vis.has(nb)) {
+        logs.push(`  Node ${nb} is unvisited. Recursing deeper into ${nb}.`);
+        setLog([...logs]);
+        await runDFS(nb, vis, logs);
+        if (stopRef.current) return;
+        setCurrent(node); // Reset current after returning from recursion
+        logs.push(`Back to node ${node} after exploring ${nb}.`);
+        setLog([...logs]);
+        await sleep(400);
+      } else {
+        logs.push(`  Node ${nb} already visited.`);
+        setLog([...logs]);
+      }
+    }
+    setCheckingEdge(null);
   };
 
   const runDijkstra = async () => {
     const dist = {}; Object.keys(GRAPH_NODES).forEach(n => dist[n] = Infinity);
     dist["A"] = 0;
+    setNodeDistances({...dist});
     const vis = new Set();
-    const logs = ["Dijkstra starting from A, initial distances: A=0, others=∞"]; setLog([...logs]);
+    const logs = ["Starting Dijkstra's Shortest Path from node A."];
+    logs.push("Dijkstra's picks the unvisited node with the smallest known distance (Greedy approach).");
+    setLog([...logs]);
+    await sleep(800);
+
     let activeE = new Set();
     while (vis.size < Object.keys(GRAPH_NODES).length) {
       if (stopRef.current) return;
+      
       let u = null, minD = Infinity;
-      Object.keys(GRAPH_NODES).forEach(n => { if (!vis.has(n) && dist[n] < minD) { u = n; minD = dist[n]; } });
-      if (!u) break;
-      vis.add(u); setCurrent(u); setVisited(new Set(vis)); logs.push(`Select ${u} (dist=${dist[u]})`); setLog([...logs]); await sleep(600);
+      Object.keys(GRAPH_NODES).forEach(n => { 
+        if (!vis.has(n) && dist[n] < minD) { u = n; minD = dist[n]; } 
+      });
+      
+      if (!u) {
+        logs.push("No more reachable unvisited nodes found.");
+        break;
+      }
+
+      logs.push(`Selecting node ${u} with minimum distance ${dist[u]}.`);
+      vis.add(u); setCurrent(u); setVisited(new Set(vis)); 
+      setLog([...logs]);
+      await sleep(800);
+
       for (const {n: v, w} of ADJ[u]) {
         if (stopRef.current) return;
+        setCheckingEdge([u, v]);
+        logs.push(`  Evaluating edge ${u} → ${v} (weight ${w})...`);
+        setLog([...logs]);
+        await sleep(500);
+
         if (!vis.has(v)) {
-          if (dist[u] + w < dist[v]) {
-            dist[v] = dist[u] + w;
-            activeE.add(`${u}-${v}`); activeE.add(`${v}-${u}`); setActiveEdges(new Set(activeE));
-            logs.push(`  Relax ${u}->${v} (wt=${w}), new dist[${v}]=${dist[v]}`); setLog([...logs]); await sleep(400);
+          const newDist = dist[u] + w;
+          logs.push(`    Current dist to ${v}: ${dist[v]}, Potential new dist: ${dist[u]} + ${w} = ${newDist}`);
+          setLog([...logs]);
+          await sleep(500);
+
+          if (newDist < dist[v]) {
+            logs.push(`    ✅ SHORTER PATH FOUND! Updating distance of ${v} to ${newDist}.`);
+            dist[v] = newDist;
+            setNodeDistances({...dist});
+            activeE.add(`${u}-${v}`); activeE.add(`${v}-${u}`); 
+            setActiveEdges(new Set(activeE));
+            setLog([...logs]);
+            await sleep(600);
+          } else {
+            logs.push(`    No update needed for ${v}.`);
+            setLog([...logs]);
           }
+        } else {
+          logs.push(`    Node ${v} already finalized.`);
+          setLog([...logs]);
         }
       }
+      setCheckingEdge(null);
     }
-    setCurrent(null); logs.push("Dijkstra complete!"); setLog([...logs]);
+    setCurrent(null); logs.push("Dijkstra Complete! We have found shortest paths from A to all reachable nodes."); 
+    setLog([...logs]);
   };
 
   const runBellmanFord = async () => {
     const dist = {}; Object.keys(GRAPH_NODES).forEach(n => dist[n] = Infinity);
     dist["A"] = 0;
-    const logs = ["Bellman-Ford starting from A"]; setLog([...logs]);
+    setNodeDistances({...dist});
+    const logs = ["Starting Bellman-Ford Shortest Path from node A."];
+    logs.push("Unlike Dijkstra, Bellman-Ford can handle negative weights by relaxing all edges V-1 times.");
+    setLog([...logs]);
+    await sleep(1000);
+
     const edges = []; GRAPH_EDGES.forEach(([u,v,w]) => { edges.push([u,v,w]); edges.push([v,u,w]); });
-    for (let i = 1; i <= Object.keys(GRAPH_NODES).length - 1; i++) {
-      logs.push(`Iteration ${i}`); setLog([...logs]);
-      let updated = false;
+    const V = Object.keys(GRAPH_NODES).length;
+
+    for (let i = 1; i < V; i++) {
+      logs.push(`--- Iteration ${i} of ${V-1} ---`);
+      logs.push(`Relaxing all ${edges.length} directed edges...`);
+      setLog([...logs]);
+      let anyUpdate = false;
+
       for (const [u, v, w] of edges) {
         if (stopRef.current) return;
-        if (dist[u] + w < dist[v]) {
-          dist[v] = dist[u] + w; updated = true;
-          logs.push(`  Relax ${u}->${v}, new dist[${v}]=${dist[v]}`); setLog([...logs]); await sleep(200);
+        setCheckingEdge([u, v]);
+        setCurrent(u);
+        await sleep(150);
+
+        if (dist[u] !== Infinity && dist[u] + w < dist[v]) {
+          dist[v] = dist[u] + w; 
+          setNodeDistances({...dist});
+          anyUpdate = true;
+          logs.push(`  Relaxed ${u}→${v}: New dist[${v}] = ${dist[v]}`);
+          setLog([...logs]);
+          await sleep(250);
         }
       }
-      if (!updated) { logs.push("No updates, early stop."); break; }
+      setCheckingEdge(null);
+      if (!anyUpdate) {
+        logs.push("No distances changed in this iteration. Optimization: stopping early.");
+        break;
+      }
     }
-    logs.push("Bellman-Ford complete!"); setLog([...logs]);
+    logs.push("Bellman-Ford Complete! One final pass could detect negative cycles.");
+    setLog([...logs]);
   };
 
   const runFloydWarshall = async () => {
     const nodes = Object.keys(GRAPH_NODES);
-    const logs = ["Floyd-Warshall All-Pairs Shortest Path"]; setLog([...logs]); await sleep(500);
-    logs.push("Requires full matrix relaxation (O(V³)). Too dense for visual steps.");
-    logs.push("Simulating completion..."); setLog([...logs]); await sleep(1000);
-    logs.push("Done computing all pairs!"); setLog([...logs]);
+    const n = nodes.length;
+    const dist = {};
+    nodes.forEach(u => {
+      dist[u] = {};
+      nodes.forEach(v => { dist[u][v] = u === v ? 0 : Infinity; });
+    });
+    GRAPH_EDGES.forEach(([u, v, w]) => { dist[u][v] = w; dist[v][u] = w; });
+
+    const logs = ["Starting Floyd-Warshall All-Pairs Shortest Path."];
+    logs.push("Strategy: For every pair (i, j), check if a path through an intermediate node 'k' is shorter.");
+    logs.push("Complexity is O(V³). Visualizing key updates...");
+    setLog([...logs]);
+    await sleep(1000);
+
+    for (const k of nodes) {
+      logs.push(`Using ${k} as intermediate node...`);
+      setCurrent(k);
+      setLog([...logs]);
+      await sleep(600);
+
+      for (const i of nodes) {
+        for (const j of nodes) {
+          if (stopRef.current) return;
+          if (i === j || i === k || j === k) continue;
+          
+          setCheckingEdge([i, j]);
+          const currentDist = dist[i][j];
+          const thruK = dist[i][k] + dist[k][j];
+
+          if (thruK < currentDist) {
+            dist[i][j] = thruK;
+            logs.push(`  Path ${i}→${j} improved via ${k}: ${currentDist} → ${thruK}`);
+            setLog([...logs]);
+            setActiveEdges(prev => new Set([...prev, `${i}-${j}`, `${j}-${i}`]));
+            await sleep(400);
+          }
+        }
+      }
+      setCheckingEdge(null);
+    }
+    setCurrent(null);
+    logs.push("Floyd-Warshall Complete! Shortest paths between all pairs computed.");
+    setLog([...logs]);
   };
 
   const runPrim = async () => {
     const vis = new Set(["A"]);
-    const logs = ["Prim's MST starting from A"];
+    const logs = ["Starting Prim's Minimum Spanning Tree (MST) from A."];
+    logs.push("Prim's grows the MST by adding the cheapest edge from visited nodes to unvisited ones.");
+    setVisited(new Set(vis)); setLog([...logs]); await sleep(800);
+    
     const activeE = new Set();
-    setVisited(new Set(vis)); setLog([...logs]); await sleep(600);
     while (vis.size < Object.keys(GRAPH_NODES).length) {
       if (stopRef.current) return;
       let minE = null;
+      
+      logs.push(`Finding cheapest edge connecting visited {${Array.from(vis).join(",")}} to the rest...`);
+      setLog([...logs]);
+      await sleep(400);
+
       for (const u of vis) {
         for (const {n: v, w} of ADJ[u]) {
           if (!vis.has(v)) {
+            setCheckingEdge([u, v]);
             if (!minE || w < minE.w) minE = {u, v, w};
           }
         }
       }
+      
       if (minE) {
         vis.add(minE.v);
         activeE.add(`${minE.u}-${minE.v}`); activeE.add(`${minE.v}-${minE.u}`);
         setVisited(new Set(vis)); setActiveEdges(new Set(activeE));
-        logs.push(`Add edge ${minE.u}-${minE.v} (wt=${minE.w}) to MST`); setLog([...logs]); await sleep(600);
+        setCurrent(minE.v);
+        logs.push(`✅ Adding edge ${minE.u}-${minE.v} (wt=${minE.w}) to the Spanning Tree.`);
+        setLog([...logs]);
+        await sleep(800);
       } else break;
     }
-    logs.push("Prim's MST complete!"); setLog([...logs]);
+    setCheckingEdge(null);
+    logs.push("Prim's MST Complete! All nodes are now connected with minimum total weight.");
+    setLog([...logs]);
   };
 
   const runKruskal = async () => {
@@ -1273,63 +1569,93 @@ function GraphVisualizer() {
     const parent = {}; Object.keys(GRAPH_NODES).forEach(n => parent[n] = n);
     const find = i => parent[i] === i ? i : (parent[i] = find(parent[i]));
     const union = (i, j) => { const rootI = find(i), rootJ = find(j); if (rootI !== rootJ) parent[rootI] = rootJ; };
-    const logs = ["Kruskal's MST", "Sort all edges by weight"]; setLog([...logs]);
+    
+    const logs = ["Starting Kruskal's MST."];
+    logs.push("Kruskal's sorts all edges and adds them one-by-one as long as they don't form a cycle.");
+    setLog([...logs]);
+    await sleep(1000);
+
     const activeE = new Set();
     for (const [u, v, w] of edges) {
       if (stopRef.current) return;
-      logs.push(`Check edge ${u}-${v} (wt=${w})`); setLog([...logs]); await sleep(500);
+      setCheckingEdge([u, v]);
+      logs.push(`Evaluating edge ${u}-${v} with weight ${w}...`);
+      setLog([...logs]);
+      await sleep(600);
+
       if (find(u) !== find(v)) {
         union(u, v);
-        activeE.add(`${u}-${v}`); activeE.add(`${v}-${u}`); setActiveEdges(new Set(activeE));
-        logs.push(`  Add to MST list (no cycle)`); setLog([...logs]); await sleep(400);
+        activeE.add(`${u}-${v}`); activeE.add(`${v}-${u}`); 
+        setActiveEdges(new Set(activeE));
+        logs.push(`  ✅ No cycle formed. Adding ${u}-${v} to MST.`);
+        setLog([...logs]);
+        await sleep(600);
       } else {
-        logs.push(`  Discard edge (forms cycle)`); setLog([...logs]); await sleep(200);
+        logs.push(`  ❌ Skip ${u}-${v}: Already connected via a shorter path (would form a cycle).`);
+        setLog([...logs]);
+        await sleep(400);
       }
     }
-    logs.push("Kruskal's MST complete!"); setLog([...logs]);
+    setCheckingEdge(null);
+    logs.push("Kruskal's MST Complete!");
+    setLog([...logs]);
   };
 
-
-
   const run = async () => {
-    stopRef.current = false; setRunning(true); reset(); await sleep(100);
+    stopRef.current = false; setRunning(true); reset(); await sleep(200);
     stopRef.current = false; setRunning(true);
     if (algo === "bfs") await runBFS();
     else if (algo === "dfs") {
       const vis = new Set();
-      const logs = ["DFS starting from node A"]; setLog([...logs]);
-      await runDFS("A", vis, logs); logs.push("DFS complete!"); setLog([...logs]);
+      const logs = ["Starting Depth-First Search (DFS) from node A."];
+      logs.push("DFS uses a Stack (via recursion) to explore as deep as possible before backtracking.");
+      setLog([...logs]);
+      await runDFS("A", vis, logs); 
+      logs.push("DFS Complete! All reachable branches explored."); setLog([...logs]);
     }
     else if (algo === "dijkstra") await runDijkstra();
     else if (algo === "bellman") await runBellmanFord();
     else if (algo === "floyd") await runFloydWarshall();
     else if (algo === "prim") await runPrim();
     else if (algo === "kruskal") await runKruskal();
-    setRunning(false); setCurrent(null);
+    setRunning(false); setCurrent(null); setCheckingEdge(null);
   };
 
   return (
     <div>
+      {/* Intuition Section */}
+      <div style={{ ...S.intuitionBox, background: "rgba(239,68,68,0.08)", borderLeft: "4px solid #ef4444" }}>
+        <span style={{ color: "#f87171", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+        {algo === "bfs" ? "Strategy: Level-order Search. Uses a Queue to visit nodes layer by layer. Excellent for finding the shortest path in unweighted graphs." :
+         algo === "dfs" ? "Strategy: Depth-first Exploration. Uses Recursion (or a Stack) to go as deep as possible before backtracking. Great for topological sorts." :
+         algo === "dijkstra" ? "Strategy: Greedy Shortest Path. Uses a Priority Queue to always expand the node with the current minimum distance. Works for non-negative weights." :
+         algo === "bellman" ? "Strategy: Dynamic Programming. Relaxes all edges multiple times to find shortest paths even in graphs with negative weights." :
+         algo === "prim" ? "Strategy: Greedy MST. Starts from a single node and always adds the cheapest edge connecting to an unvisited node." :
+         "Strategy: Edge-based MST. Sorts all edges by weight and adds them one by one if they don't form a cycle. Uses Disjoint Set Union (DSU)."}
+      </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
-        {["bfs", "dfs", "dijkstra", "bellman", "floyd", "prim", "kruskal"].map((a) => (
-          <button key={a} onClick={() => { if (!running) { setAlgo(a); reset(); }}}
-            style={{
-              padding: "7px 18px", borderRadius: 8,
-              border: `1px solid ${algo === a ? "#ef4444" : "rgba(255,255,255,0.1)"}`,
-              background: algo === a ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.04)",
-              color: algo === a ? "#f87171" : "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, cursor: "pointer"
-            }}>
-            {a.toUpperCase()}
+        <label style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          Algorithm:
+          <select value={algo} onChange={(e) => { if (!running) { setAlgo(e.target.value); reset(); } }}
+            className="ctrl-select"
+            style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.4)", borderRadius: 10, padding: "8px 32px 8px 14px", color: "#f87171", fontSize: 13.5, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%23f87171'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}>
+            <option value="bfs">BFS (Breadth-First Search)</option>
+            <option value="dfs">DFS (Depth-First Search)</option>
+            <option value="dijkstra">Dijkstra's Shortest Path</option>
+            <option value="bellman">Bellman-Ford</option>
+            <option value="floyd">Floyd-Warshall</option>
+            <option value="prim">Prim's MST</option>
+            <option value="kruskal">Kruskal's MST</option>
+          </select>
+        </label>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+          <button className="ctrl-input" onClick={reset} disabled={running} style={{ padding: "8px 18px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer" }}>Reset</button>
+          <button className="btn-primary" onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
+            style={{ padding: "8px 24px", borderRadius: 10, background: running ? "rgba(239,68,68,0.8)" : "rgba(239,68,68,0.9)", fontWeight: 800 }}>
+            {running ? "⏹ Stop Execution" : "▶ Run Graph Algo"}
           </button>
-        ))}
-        <button onClick={reset} disabled={running}
-          style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer", marginLeft: "auto" }}>
-          Reset
-        </button>
-        <button onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
-          style={{ padding: "7px 22px", borderRadius: 8, border: "none", background: running ? "rgba(239,68,68,0.2)" : "rgba(239,68,68,0.9)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-          {running ? "Stop" : "Run"}
-        </button>
+        </div>
       </div>
 
       {/* SVG Graph */}
@@ -1337,13 +1663,17 @@ function GraphVisualizer() {
         {GRAPH_EDGES.map(([u, v, w]) => {
           const [x1, y1] = GRAPH_NODES[u]; const [x2, y2] = GRAPH_NODES[v];
           const isMST = activeEdges.has(`${u}-${v}`) || activeEdges.has(`${v}-${u}`);
+          const isChecking = checkingEdge && ((checkingEdge[0] === u && checkingEdge[1] === v) || (checkingEdge[0] === v && checkingEdge[1] === u));
           const isVisitedEdge = visited.has(u) && visited.has(v);
-          let stroke = "rgba(255,255,255,0.1)"; let width = 1.5;
-          if (isMST) { stroke = "#f59e0b"; width = 3; }
+          
+          let stroke = "rgba(255,255,255,0.1)"; let width = 1.5; let dash = "none";
+          if (isChecking) { stroke = "#3b82f6"; width = 3; dash = "5,5"; }
+          else if (isMST) { stroke = "#f59e0b"; width = 3; }
           else if (isVisitedEdge && (algo === "bfs" || algo === "dfs")) { stroke = "#ef4444"; width = 2; }
+          
           return (
             <g key={`${u}-${v}`}>
-              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={stroke} strokeWidth={width} />
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={stroke} strokeWidth={width} strokeDasharray={dash} style={{ transition: "all 0.3s" }} />
               <text x={(x1+x2)/2} y={(y1+y2)/2 - 5} fill="rgba(255,255,255,0.4)" fontSize={11} fontWeight={600}>{w}</text>
             </g>
           );
@@ -1352,45 +1682,286 @@ function GraphVisualizer() {
           const isVisited = visited.has(name);
           const isCurrent = current === name;
           const inQueue = queue.includes(name);
+          const dist = nodeDistances[name];
+          
           let fill = "rgba(255,255,255,0.06)", stroke = "rgba(255,255,255,0.2)";
           if (isCurrent) { fill = "rgba(239,68,68,0.4)"; stroke = "#ef4444"; }
           else if (isVisited) { fill = "rgba(52,211,153,0.2)"; stroke = "#34d399"; }
           else if (inQueue) { fill = "rgba(251,146,60,0.15)"; stroke = "#fb923c"; }
+          
           return (
             <g key={name}>
               <circle cx={x} cy={y} r={24} fill={fill} stroke={stroke} strokeWidth={2} style={{ transition: "all 0.3s" }} />
-              <text x={x} y={y + 5} textAnchor="middle" fill="#f1f5f9" fontSize={15} fontWeight={700}>{name}</text>
+              <text x={x} y={y + 2} textAnchor="middle" fill="#f1f5f9" fontSize={14} fontWeight={800}>{name}</text>
+              {dist !== undefined && dist !== Infinity && (
+                <text x={x} y={y + 38} textAnchor="middle" fill={isCurrent ? "#ef4444" : "#60a5fa"} fontSize={10} fontWeight={900}>
+                  dist: {dist}
+                </text>
+              )}
             </g>
           );
         })}
       </svg>
 
       {/* Legend */}
-      <div style={{ display: "flex", gap: 16, fontSize: 12, marginBottom: 18 }}>
-        {[["#ef4444", "Current"], ["#34d399", "Visited"], ["#fb923c", "In Queue"]].map(([c, l]) => (
-          <span key={l} style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.6)" }}>
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 11, marginBottom: 18 }}>
+        {[["#ef4444", "Current Node"], ["#34d399", "Visited / Final"], ["#fb923c", "In Queue"], ["#3b82f6", "Checking Edge"], ["#f59e0b", "MST Edge"]].map(([c, l]) => (
+          <span key={l} style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.03)", padding: "4px 8px", borderRadius: 6 }}>
             <span style={{ width: 10, height: 10, borderRadius: "50%", background: c, display: "inline-block" }} /> {l}
           </span>
         ))}
       </div>
 
-      <p style={{ ...S.sectionLabel, color: "#94a3b8" }}>Execution Log</p>
-      <div style={S.logBox}>
-        {log.length === 0 ? <span style={{ color: "rgba(255,255,255,0.3)" }}>Press Run to start...</span> :
-          log.map((entry, i) => (
-            <div key={i} style={{ color: entry.startsWith("  ") ? "rgba(255,255,255,0.55)" : "#f87171" }}>
-              <span style={{ color: "rgba(255,255,255,0.25)", marginRight: 10 }}>{String(i + 1).padStart(2, "0")}</span>{entry}
-            </div>
-          ))}
-        <div ref={logEndRef} />
+      {/* Standardized Execution Log */}
+      <div className="log-panel" style={{ height: 250 }}>
+        <div className="log-header" style={{ borderColor: "rgba(239,68,68,0.2)" }}>
+           <span style={{ color: "#ef4444" }}>⚡</span> Graph Execution Log
+        </div>
+        <div className="log-content thin-scroll">
+          {log.length === 0 ? (
+            <div className="log-line" style={{ opacity: 0.4 }}>Select a graph algorithm and press Run...</div>
+          ) : (
+            log.map((entry, i) => {
+              let className = "log-line";
+              if (entry.includes("|") || !entry.startsWith("  ")) className += " log-highlight";
+              if (entry.includes("complete")) className += " log-success";
+              return (
+                <div key={i} className={className}>
+                  <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                  {entry}
+                </div>
+              );
+            })
+          )}
+          <div ref={logEndRef} />
+        </div>
       </div>
     </div>
   );
 }
 
+
 /* =============================================================
-   BACKTRACKING VISUALIZER — N-Queens
+   TREE ALGORITHMS VISUALIZER
 ============================================================= */
+function TreeAlgorithmsVisualizer() {
+  const [algo, setAlgo] = useState("levelorder");
+  const [current, setCurrent] = useState(null);
+  const [highlighted, setHighlighted] = useState(new Set());
+  const [log, setLog] = useState([]);
+  const [running, setRunning] = useState(false);
+  const stopRef = useRef(false);
+  const logEndRef = useRef(null);
+
+  const tree = {
+    val: 1,
+    left: { 
+      val: 2, 
+      left: { val: 4, left: null, right: null }, 
+      right: { val: 5, left: { val: 8, left: null, right: null }, right: null } 
+    },
+    right: { 
+      val: 3, 
+      left: { val: 6, left: null, right: null }, 
+      right: { val: 7, left: null, right: null } 
+    }
+  };
+
+  const getPos = (val) => {
+    const positions = {
+      1: [180, 40], 2: [100, 100], 3: [260, 100],
+      4: [60, 160], 5: [140, 160], 6: [220, 160], 7: [300, 160],
+      8: [120, 220]
+    };
+    return positions[val];
+  };
+
+  const reset = () => {
+    stopRef.current = true;
+    setCurrent(null); setHighlighted(new Set()); setLog([]); setRunning(false);
+  };
+
+  const runLevelOrder = async () => {
+    const q = [tree];
+    const logs = ["Starting Level Order Traversal (Breadth-First Search)."];
+    logs.push("This algorithm visits every node level-by-level using a Queue.");
+    setLog([...logs]); await sleep(800);
+
+    while (q.length > 0) {
+      if (stopRef.current) return;
+      const node = q.shift();
+      setCurrent(node.val);
+      setHighlighted(prev => new Set([...prev, node.val]));
+      logs.push(`Visit node ${node.val}. Current Queue: [${q.map(n => n.val).join(", ")}]`);
+      setLog([...logs]); await sleep(800);
+
+      if (node.left) { 
+        q.push(node.left); 
+        logs.push(`  Add left child ${node.left.val} to queue.`); 
+      }
+      if (node.right) { 
+        q.push(node.right); 
+        logs.push(`  Add right child ${node.right.val} to queue.`); 
+      }
+      setLog([...logs]);
+    }
+    setCurrent(null);
+    logs.push("Level Order Complete!"); setLog([...logs]);
+  };
+
+  const runLCA = async (node1, node2) => {
+    const logs = [`Finding Lowest Common Ancestor (LCA) for ${node1} and ${node2}`];
+    logs.push("The LCA is the deepest node that has both targets as descendants.");
+    setLog([...logs]); await sleep(1000);
+
+    const findLCA = async (node) => {
+      if (!node || stopRef.current) return null;
+      setCurrent(node.val);
+      logs.push(`At node ${node.val}. Checking if it's ${node1} or ${node2}...`);
+      setLog([...logs]); await sleep(800);
+
+      if (node.val === node1 || node.val === node2) {
+        logs.push(`Found target node ${node.val}! Returning up the call stack.`);
+        setHighlighted(prev => new Set([...prev, node.val]));
+        setLog([...logs]); return node;
+      }
+
+      logs.push(`Searching left subtree of ${node.val}...`);
+      setLog([...logs]);
+      const left = await findLCA(node.left);
+      if (stopRef.current) return null;
+      
+      setCurrent(node.val); // Back to parent
+      logs.push(`Searching right subtree of ${node.val}...`);
+      setLog([...logs]);
+      const right = await findLCA(node.right);
+      if (stopRef.current) return null;
+
+      setCurrent(node.val);
+      if (left && right) {
+        logs.push(`✅ Both subtrees returned targets! LCA is ${node.val}.`);
+        setHighlighted(prev => new Set([...prev, node.val]));
+        setLog([...logs]);
+        return node;
+      }
+      return left || right;
+    };
+
+    const result = await findLCA(tree);
+    if (result) {
+      logs.push(`LCA Calculation Result: ${result.val}`);
+      setCurrent(result.val);
+    }
+    setLog([...logs]);
+  };
+
+  const runDiameter = async () => {
+    const logs = ["Calculating Diameter of Tree (Longest path between any two nodes)."];
+    logs.push("The diameter can be the max of: Left Diameter, Right Diameter, or (Left Height + Right Height + 1).");
+    setLog([...logs]); await sleep(1000);
+
+    let maxD = 0;
+    const height = async (node) => {
+      if (!node || stopRef.current) return 0;
+      setCurrent(node.val);
+      logs.push(`Calculating height of node ${node.val}...`);
+      setLog([...logs]); await sleep(500);
+
+      const lh = await height(node.left);
+      const rh = await height(node.right);
+      
+      const currentDiameter = lh + rh; // path through current node
+      if (currentDiameter > maxD) {
+        maxD = currentDiameter;
+        logs.push(`  New potential max diameter through ${node.val}: ${lh} (L) + ${rh} (R) = ${currentDiameter}`);
+      }
+
+      setCurrent(node.val);
+      setHighlighted(prev => new Set([...prev, node.val]));
+      return 1 + Math.max(lh, rh);
+    };
+
+    await height(tree);
+    logs.push(`✅ Tree Diameter Complete! Longest path is ${maxD} edges.`);
+    setLog([...logs]);
+    setCurrent(null);
+  };
+
+  const run = async () => {
+    stopRef.current = false; setRunning(true); reset(); await sleep(200);
+    stopRef.current = false; setRunning(true);
+    if (algo === "levelorder") await runLevelOrder();
+    else if (algo === "lca") await runLCA(4, 8);
+    else if (algo === "diameter") await runDiameter();
+    setRunning(false);
+  };
+
+  return (
+    <div>
+      <div style={{ ...S.intuitionBox, background: "rgba(16,185,129,0.08)", borderLeft: "4px solid #10b981" }}>
+        <span style={{ color: "#34d399", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+        {algo === "levelorder" ? "Level Order Traversal uses a Queue to process nodes level-by-level, making it perfect for finding the shallowest nodes." :
+         algo === "lca" ? "LCA uses a recursive post-order strategy. If a node finds targets in both its left and right subtrees, it is their lowest common ancestor." :
+         "Diameter of a tree is the longest path between any two leaf nodes. It requires calculating heights recursively for every subtree."}
+      </div>
+
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
+        <label style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          Algorithm:
+          <select value={algo} onChange={(e) => { if (!running) { setAlgo(e.target.value); reset(); } }}
+            className="ctrl-select"
+            style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.4)", borderRadius: 10, padding: "8px 32px 8px 14px", color: "#34d399", fontSize: 13.5, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%2334d399'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}>
+            <option value="levelorder">Level Order Traversal (BFS)</option>
+            <option value="lca">Lowest Common Ancestor (LCA)</option>
+            <option value="diameter">Tree Diameter</option>
+          </select>
+        </label>
+        <button className="btn-primary" onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
+          style={{ padding: "8px 24px", borderRadius: 10, background: running ? "rgba(239,68,68,0.8)" : "rgba(16,185,129,0.9)", marginLeft: "auto", fontWeight: 800 }}>
+          {running ? "⏹ Stop Execution" : "▶ Run Tree Algo"}
+        </button>
+      </div>
+
+      <svg width="100%" height="260" viewBox="0 0 360 260" style={{ background: "rgba(0,0,0,0.2)", borderRadius: 16, marginBottom: 20 }}>
+        {/* Draw edges first */}
+        {[
+          [1, 2], [1, 3], [2, 4], [2, 5], [3, 6], [3, 7], [5, 8]
+        ].map(([u, v]) => {
+          const [x1, y1] = getPos(u); const [x2, y2] = getPos(v);
+          return <line key={`${u}-${v}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />;
+        })}
+        {/* Draw nodes */}
+        {[1, 2, 3, 4, 5, 6, 7, 8].map(n => {
+          const [x, y] = getPos(n);
+          const isCurrent = current === n;
+          const isHighlighted = highlighted.has(n);
+          return (
+            <g key={n}>
+              <circle cx={x} cy={y} r={18} 
+                fill={isCurrent ? "rgba(16,185,129,0.4)" : isHighlighted ? "rgba(59,130,246,0.2)" : "rgba(255,255,255,0.05)"} 
+                stroke={isCurrent ? "#10b981" : isHighlighted ? "#3b82f6" : "rgba(255,255,255,0.2)"} 
+                strokeWidth="2" style={{ transition: "all 0.3s" }} />
+              <text x={x} y={y + 5} textAnchor="middle" fill="#fff" fontSize={12} fontWeight={800}>{n}</text>
+            </g>
+          );
+        })}
+      </svg>
+
+      <div className="log-panel" style={{ height: 200 }}>
+        <div className="log-header" style={{ borderColor: "rgba(16,185,129,0.2)" }}>
+           <span style={{ color: "#10b981" }}>⚡</span> Tree Execution Log
+        </div>
+        <div className="log-content thin-scroll">
+          {log.length === 0 ? <div className="log-line" style={{ opacity: 0.4 }}>Waiting for execution...</div> : 
+            log.map((entry, i) => <div key={i} className={`log-line ${entry.includes("✅") ? "log-success" : ""}`}>{entry}</div>)
+          }
+          <div ref={logEndRef} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BacktrackingVisualizer() {
   const [algo, setAlgo] = useState("nqueens");
   const [N, setN] = useState(4);
@@ -1425,8 +1996,9 @@ function BacktrackingVisualizer() {
   const solveNQueens = async (b, col, logs, findAll = true) => {
     if (col >= N) {
       const sol = b.map(r => [...r]);
+      const nextSolNum = solutions.length + 1;
       setSolutions(prev => [...prev, sol]);
-      logs.push(`✅ Solution #${solutions.length + 1} found!`);
+      logs.push(`✅ Solution #${nextSolNum} found!`);
       setLog([...logs]);
       return !findAll; // return true if we only want one, false to keep searching
     }
@@ -1520,50 +2092,57 @@ function BacktrackingVisualizer() {
 
   return (
     <div>
+      {/* Intuition Section */}
+      <div style={{ ...S.intuitionBox, background: "rgba(139,92,246,0.08)", borderLeft: "4px solid #8b5cf6" }}>
+        <span style={{ color: "#a78bfa", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+        {algo === "nqueens" ? "Strategy: State-Space Search. We place queens column by column, checking safety. If we get stuck, we backtrack and try the next row. Complexity: O(N!)." :
+         "Strategy: Systematic Inclusion. For each number, we try including it in the sum and then excluding it. If a path fails, we backtrack to the previous decision point. Complexity: O(2ⁿ)."}
+      </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
-        {["nqueens", "subset"].map((a) => (
-          <button key={a} onClick={() => { if (!running) { setAlgo(a); reset(); }}}
-            style={{
-              padding: "7px 18px", borderRadius: 8,
-              border: `1px solid ${algo === a ? "#8b5cf6" : "rgba(255,255,255,0.1)"}`,
-              background: algo === a ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.04)",
-              color: algo === a ? "#a78bfa" : "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, cursor: "pointer"
-            }}>
-            {a === "nqueens" ? "N-Queens" : "Subset Sum"}
-          </button>
-        ))}
+        <label style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          Algorithm:
+          <select value={algo} onChange={(e) => { if (!running) { setAlgo(e.target.value); reset(); } }}
+            className="ctrl-select"
+            style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.4)", borderRadius: 10, padding: "8px 32px 8px 14px", color: "#a78bfa", fontSize: 13.5, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%23a78bfa'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}>
+            <option value="nqueens">N-Queens Problem</option>
+            <option value="subset">Subset Sum</option>
+          </select>
+        </label>
         {algo === "nqueens" && (
-          <label style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
-            N:
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 10, background: "rgba(0,0,0,0.2)", padding: "4px 12px", borderRadius: 10 }}>
+            <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 700 }}>BOARD SIZE:</span>
             {[4, 8, 16].map(v => (
               <button key={v} onClick={() => { if (!running) { setN(v); setBoard(Array(v).fill(null).map(() => Array(v).fill(false))); setLog([]); setFound(false); setSolutions([]); setCurrentSolutionIdx(-1); }}}
-                style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${N === v ? "#8b5cf6" : "rgba(255,255,255,0.1)"}`, background: N === v ? "rgba(139,92,246,0.15)" : "transparent", color: N === v ? "#a78bfa" : "rgba(255,255,255,0.5)", fontSize: 12, cursor: "pointer" }}>
+                style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${N === v ? "#8b5cf6" : "transparent"}`, background: N === v ? "rgba(139,92,246,0.15)" : "transparent", color: N === v ? "#a78bfa" : "rgba(255,255,255,0.3)", fontSize: 12, cursor: "pointer", fontWeight: 700 }}>
                 {v}
               </button>
             ))}
-          </label>
+          </div>
         )}
-        <button onClick={reset} disabled={running} style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer", marginLeft: "auto" }}>Reset</button>
-        <button onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
-          style={{ padding: "7px 22px", borderRadius: 8, border: "none", background: running ? "rgba(239,68,68,0.2)" : "rgba(139,92,246,0.9)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-          {running ? "Stop" : "Solve"}
-        </button>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+          <button className="ctrl-input" onClick={reset} disabled={running} style={{ padding: "8px 18px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer" }}>Reset</button>
+          <button className="btn-primary" onClick={running ? () => { stopRef.current = true; setRunning(false); } : run}
+            style={{ padding: "8px 24px", borderRadius: 10, background: running ? "rgba(239,68,68,0.8)" : "rgba(139,92,246,0.9)", fontWeight: 800 }}>
+            {running ? "⏹ Stop Execution" : "▶ Start Solving"}
+          </button>
+        </div>
       </div>
 
       {algo === "nqueens" ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
-          <div style={{ display: "inline-block", border: "2px solid rgba(139,92,246,0.3)", borderRadius: 8, overflow: "hidden", background: "#000" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
+          <div style={{ display: "inline-block", border: "4px solid rgba(139,92,246,0.3)", borderRadius: 12, overflow: "hidden", background: "#000", boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
             {board.map((row, r) => (
               <div key={r} style={{ display: "flex" }}>
                 {row.map((cell, c) => (
                   <div key={c} style={{
                     width: cellSize, height: cellSize,
-                    background: cell ? "rgba(139,92,246,0.6)" : (r + c) % 2 === 0 ? "#1e293b" : "#0f172a",
+                    background: cell ? "rgba(139,92,246,0.3)" : (r + c) % 2 === 0 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.2)",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    border: "1px solid rgba(255,255,255,0.05)",
+                    border: "0.5px solid rgba(255,255,255,0.03)",
                     fontSize: cellSize * 0.5, transition: "background 0.2s"
                   }}>
-                    {cell && <span style={{ color: "#fff", fontWeight: 900, fontSize: cellSize * 0.7, textShadow: "0 0 10px rgba(139,92,246,0.8)" }}>♛</span>}
+                    {cell && <span style={{ color: "#a78bfa", fontWeight: 900, fontSize: cellSize * 0.7, textShadow: "0 0 15px rgba(139,92,246,0.8)" }}>♛</span>}
                   </div>
                 ))}
               </div>
@@ -1571,22 +2150,22 @@ function BacktrackingVisualizer() {
           </div>
           
           {solutions.length > 0 && (
-            <div style={{ marginTop: 20, width: "100%", maxWidth: 600 }}>
-              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, textAlign: "center", marginBottom: 12 }}>
-                Found <strong>{solutions.length}</strong> possible solutions. {N === 16 && "(Limited search for performance)"}
+            <div style={{ marginTop: 24, width: "100%", maxWidth: 650 }}>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, textAlign: "center", marginBottom: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Discovered <span style={{ color: "#a78bfa" }}>{solutions.length}</span> Valid Configurations
               </p>
-              <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 10, scrollbarWidth: "thin" }}>
+              <div className="thin-scroll" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 12 }}>
                 {solutions.map((sol, idx) => (
                   <div key={idx} 
                     onClick={() => { setBoard(sol); setCurrentSolutionIdx(idx); }}
                     style={{
-                      minWidth: 60, height: 60, borderRadius: 6, cursor: "pointer",
-                      border: `2px solid ${currentSolutionIdx === idx ? "#8b5cf6" : "rgba(255,255,255,0.1)"}`,
-                      background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center",
-                      flexDirection: "column", transition: "all 0.2s"
+                      minWidth: 70, height: 50, borderRadius: 10, cursor: "pointer",
+                      border: `2px solid ${currentSolutionIdx === idx ? "#8b5cf6" : "rgba(255,255,255,0.08)"}`,
+                      background: currentSolutionIdx === idx ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.02)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.2s", boxShadow: currentSolutionIdx === idx ? "0 4px 12px rgba(139,92,246,0.3)" : "none"
                     }}>
-                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Sol</span>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: currentSolutionIdx === idx ? "#a78bfa" : "#f1f5f9" }}>#{idx + 1}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: currentSolutionIdx === idx ? "#a78bfa" : "rgba(255,255,255,0.4)" }}>#{idx + 1}</span>
                   </div>
                 ))}
               </div>
@@ -1594,19 +2173,22 @@ function BacktrackingVisualizer() {
           )}
         </div>
       ) : (
-        <div style={{ marginBottom: 20 }}>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginBottom: 16 }}>Target Sum: {ssTarget} <span style={{marginLeft: 20}}>Current Sum: {subset.reduce((a,b)=>a+b, 0)}</span></p>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+        <div style={{ marginBottom: 24, background: "rgba(0,0,0,0.2)", padding: 24, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+             <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600 }}>Target Sum: <strong style={{ color: "#a78bfa" }}>{ssTarget}</strong></span>
+             <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600 }}>Current Sum: <strong style={{ color: "#34d399" }}>{subset.reduce((a,b)=>a+b, 0)}</strong></span>
+          </div>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
             {ssArr.map((v, i) => {
               const inSubset = subset.includes(v);
               const isActive = ssIndex === i;
               return (
                 <div key={i} style={{
-                  width: 50, height: 50, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
-                  background: inSubset ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.05)",
-                  border: `1px solid ${isActive ? "#a78bfa" : inSubset ? "#34d399" : "rgba(255,255,255,0.1)"}`,
-                  color: inSubset ? "#34d399" : "#f1f5f9", fontSize: 16, fontWeight: 700,
-                  boxShadow: isActive ? "0 0 10px rgba(167,139,250,0.5)" : "none", transition: "all 0.3s"
+                  width: 56, height: 56, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
+                  background: inSubset ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.04)",
+                  border: `2px solid ${isActive ? "#a78bfa" : inSubset ? "#10b981" : "rgba(255,255,255,0.1)"}`,
+                  color: inSubset ? "#34d399" : "rgba(255,255,255,0.6)", fontSize: 18, fontWeight: 800,
+                  boxShadow: isActive ? "0 0 15px rgba(167,139,250,0.4)" : "none", transition: "all 0.3s"
                 }}>
                   {v}
                 </div>
@@ -1616,21 +2198,36 @@ function BacktrackingVisualizer() {
         </div>
       )}
 
-      {found && (
-        <div style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.3)", borderRadius: 10, padding: "12px 16px", marginBottom: 16, textAlign: "center" }}>
-          <span style={{ color: "#a78bfa", fontWeight: 700 }}>Solution found!</span>
+      {found && algo === "subset" && (
+        <div style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 12, padding: "16px 20px", marginBottom: 24, textAlign: "center" }}>
+          <span style={{ color: "#34d399", fontWeight: 800, fontSize: 16 }}>✅ Valid Subset Found: [ {subset.join(", ")} ]</span>
         </div>
       )}
 
-      <p style={{ ...S.sectionLabel, color: "#94a3b8" }}>Execution Log</p>
-      <div style={S.logBox}>
-        {log.length === 0 ? <span style={{ color: "rgba(255,255,255,0.3)" }}>Press Solve to start...</span> :
-          log.map((entry, i) => (
-            <div key={i} style={{ color: entry.startsWith("  ") ? "rgba(255,255,255,0.55)" : "#a78bfa" }}>
-              <span style={{ color: "rgba(255,255,255,0.25)", marginRight: 10 }}>{String(i + 1).padStart(2, "0")}</span>{entry}
-            </div>
-          ))}
-        <div ref={logEndRef} />
+      {/* Standardized Execution Log */}
+      <div className="log-panel" style={{ height: 250 }}>
+        <div className="log-header" style={{ borderColor: "rgba(139,92,246,0.2)" }}>
+           <span style={{ color: "#8b5cf6" }}>⚡</span> Backtracking Execution Log
+        </div>
+        <div className="log-content thin-scroll">
+          {log.length === 0 ? (
+            <div className="log-line" style={{ opacity: 0.4 }}>Select a problem and press Solve...</div>
+          ) : (
+            log.map((entry, i) => {
+              let className = "log-line";
+              if (entry.includes("Include") || entry.includes("Safe") || !entry.startsWith("  ")) className += " log-highlight";
+              if (entry.includes("Found") || entry.includes("complete")) className += " log-success";
+              if (entry.includes("Backtrack")) className += " log-warning";
+              return (
+                <div key={i} className={className}>
+                  <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                  {entry}
+                </div>
+              );
+            })
+          )}
+          <div ref={logEndRef} />
+        </div>
       </div>
     </div>
   );
@@ -1741,9 +2338,8 @@ function DivideConquerVisualizer() {
 
   const runKaratsuba = () => {
     const steps = [];
-    steps.push(`Karatsuba Multiplication: ${karaX} x ${karaY}`);
+    steps.push(`⚡ Starting Karatsuba: ${karaX} x ${karaY}`);
     const result = karatsuba(karaX, karaY, steps);
-    steps.push(`Final Result: ${karaX} x ${karaY} = ${result}`);
     setKaraSteps(steps);
     setKaraResult(result);
     setLog(steps);
@@ -1808,65 +2404,74 @@ function DivideConquerVisualizer() {
 
   return (
     <div>
+      {/* Intuition Section */}
+      <div style={{ ...S.intuitionBox, background: "rgba(236,72,153,0.08)", borderLeft: "4px solid #ec4899" }}>
+        <span style={{ color: "#f472b6", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+        {algo === "mergesort" ? "Strategy: Divide and Conquer. We recursively split the array into halves until we reach single elements, then merge them back in sorted order. Complexity: O(n log n)." :
+         algo === "karatsuba" ? "Strategy: Recursive Multiplication. Instead of the traditional O(n²) multiplication, Karatsuba uses a clever algebraic trick to multiply large numbers in O(n^1.58) time." :
+         algo === "binarysearch" ? "Strategy: Logarithmic Search. By always checking the middle element and discarding half the search space, we find targets in O(log n) time." :
+         "Strategy: Optimized Matrix Multiplication. Strassen's algorithm reduces the number of recursive multiplications from 8 to 7, achieving O(n^2.81) for large matrices."}
+      </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
-        {[["mergesort", "Merge Sort Tree"], ["karatsuba", "Karatsuba Multiply"], ["binarysearch", "Binary Search (D&C)"], ["strassen", "Strassen"]].map(([a, label]) => (
-          <button key={a} onClick={() => { if (!running) { setAlgo(a); reset(); }}}
-            style={{
-              padding: "7px 18px", borderRadius: 8,
-              border: `1px solid ${algo === a ? "#ec4899" : "rgba(255,255,255,0.1)"}`,
-              background: algo === a ? "rgba(236,72,153,0.15)" : "rgba(255,255,255,0.04)",
-              color: algo === a ? "#f472b6" : "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, cursor: "pointer"
-            }}>{label}</button>
-        ))}
+        <label style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          Algorithm:
+          <select value={algo} onChange={(e) => { if (!running) { setAlgo(e.target.value); reset(); } }}
+            className="ctrl-select"
+            style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.4)", borderRadius: 10, padding: "8px 32px 8px 14px", color: "#f472b6", fontSize: 13.5, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%23f472b6'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}>
+            <option value="mergesort">Merge Sort Tree</option>
+            <option value="karatsuba">Karatsuba Multiplication</option>
+            <option value="binarysearch">Binary Search (D&C)</option>
+            <option value="strassen">Strassen's Matrix Multiply</option>
+          </select>
+        </label>
 
         {algo === "karatsuba" && (
-          <>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
             <input type="number" value={karaX} onChange={e => setKaraX(Number(e.target.value))}
-              style={{ width: 80, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6, padding: "5px 8px", color: "#f1f5f9", fontSize: 13 }} />
-            <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 16, fontWeight: 700 }}>x</span>
+              className="ctrl-input"
+              style={{ width: 90, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "5px 12px", color: "#f1f5f9", fontSize: 13 }} />
+            <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 16, fontWeight: 900 }}>×</span>
             <input type="number" value={karaY} onChange={e => setKaraY(Number(e.target.value))}
-              style={{ width: 80, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6, padding: "5px 8px", color: "#f1f5f9", fontSize: 13 }} />
-          </>
+              className="ctrl-input"
+              style={{ width: 90, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "5px 12px", color: "#f1f5f9", fontSize: 13 }} />
+          </div>
         )}
 
         {algo === "binarysearch" && (
           <label style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
             Target:
             <input type="number" value={bsTarget} onChange={(e) => setBsTarget(Number(e.target.value))}
-              style={{ width: 60, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6, padding: "4px 8px", color: "#f1f5f9", fontSize: 13 }} />
+              className="ctrl-input"
+              style={{ width: 70, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "5px 12px", color: "#f1f5f9", fontSize: 13 }} />
           </label>
         )}
 
-        {algo === "strassen" && (
-          <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginLeft: 10 }}>Simulating 2x2 Matrices A and B</span>
-        )}
-
-        <button onClick={reset} style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer", marginLeft: "auto" }}>Reset</button>
-        <button onClick={algo === "mergesort" ? (running ? () => { stopRef.current = true; setRunning(false); } : runMergeSort) :
+        <button className="btn-primary" onClick={algo === "mergesort" ? (running ? () => { stopRef.current = true; setRunning(false); } : runMergeSort) :
                          algo === "binarysearch" ? (running ? () => { stopRef.current = true; setRunning(false); } : runBinarySearch) :
                          algo === "strassen" ? (running ? () => { stopRef.current = true; setRunning(false); } : runStrassen) :
                          runKaratsuba}
-          style={{ padding: "7px 22px", borderRadius: 8, border: "none", background: running ? "rgba(239,68,68,0.2)" : "rgba(236,72,153,0.9)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-          {(running && algo !== "karatsuba") ? "Stop" : algo === "karatsuba" ? "Calculate" : "Run"}
+          style={{ padding: "8px 24px", borderRadius: 10, background: running ? "rgba(239,68,68,0.8)" : "rgba(236,72,153,0.9)", marginLeft: "auto", fontWeight: 800 }}>
+          {(running && algo !== "karatsuba") ? "⏹ Stop" : "▶ Run Algorithm"}
         </button>
       </div>
 
       {/* Merge Sort tree */}
       {algo === "mergesort" && (
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 24, padding: 20, background: "rgba(0,0,0,0.2)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
           {[0, 1, 2, 3, 4].map(depth => {
             const nodes = treeNodes.filter(n => n.depth === depth);
             if (nodes.length === 0) return null;
             return (
-              <div key={depth} style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+              <div key={depth} style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
                 {nodes.map(node => (
                   <div key={node.id} style={{
-                    padding: "6px 10px", borderRadius: 8, fontSize: 11, fontFamily: "monospace",
-                    background: node.state === "merged" ? "rgba(52,211,153,0.15)" : node.state === "base" ? "rgba(59,130,246,0.15)" : `rgba(236,72,153,0.1)`,
-                    border: `1px solid ${node.state === "merged" ? "#34d399" : node.state === "base" ? "#3b82f6" : depthColors[depth % depthColors.length]}55`,
+                    padding: "8px 14px", borderRadius: 10, fontSize: 12, fontFamily: "'JetBrains Mono', monospace",
+                    background: node.state === "merged" ? "rgba(16,185,129,0.15)" : node.state === "base" ? "rgba(59,130,246,0.15)" : `rgba(236,72,153,0.1)`,
+                    border: `1px solid ${node.state === "merged" ? "#10b981" : node.state === "base" ? "#3b82f6" : depthColors[depth % depthColors.length]}66`,
                     color: node.state === "merged" ? "#34d399" : node.state === "base" ? "#60a5fa" : depthColors[depth % depthColors.length],
-                    fontWeight: 600, whiteSpace: "nowrap",
-                    transition: "all 0.3s"
+                    fontWeight: 700, whiteSpace: "nowrap", transition: "all 0.4s",
+                    boxShadow: node.state !== "dividing" ? "0 4px 12px rgba(0,0,0,0.2)" : "none"
                   }}>
                     [{node.arr.join(",")}]
                   </div>
@@ -1874,34 +2479,60 @@ function DivideConquerVisualizer() {
               </div>
             );
           })}
-          <div style={{ display: "flex", gap: 16, fontSize: 12, marginTop: 10 }}>
-            {[["#ec4899", "Dividing"], ["#3b82f6", "Base"], ["#34d399", "Merged"]].map(([c, l]) => (
-              <span key={l} style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.6)" }}>
-                <span style={{ width: 10, height: 10, borderRadius: 2, background: c, display: "inline-block" }} /> {l}
+          <div style={{ display: "flex", gap: 16, fontSize: 12, marginTop: 10, justifyContent: "center" }}>
+            {[["#ec4899", "Dividing"], ["#3b82f6", "Base Case"], ["#10b981", "Merged"]].map(([c, l]) => (
+              <span key={l} style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>
+                <span style={{ width: 12, height: 12, borderRadius: 3, background: c, display: "inline-block" }} /> {l}
               </span>
             ))}
           </div>
         </div>
       )}
 
-      {/* Karatsuba result */}
+      {/* Karatsuba result & Visual Breakdown */}
       {algo === "karatsuba" && karaResult !== null && (
-        <div style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.3)", borderRadius: 10, padding: "14px 18px", marginBottom: 18, textAlign: "center" }}>
-          <span style={{ color: "#f472b6", fontWeight: 700, fontSize: 16 }}>{karaX} x {karaY} = {karaResult}</span>
-          <br />
-          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Verified: {karaX * karaY}</span>
+        <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+          <div style={{ flex: 1, background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.3)", borderRadius: 16, padding: 24, textAlign: "center" }}>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 12, fontWeight: 700 }}>KARATSUBA FINAL RESULT</p>
+            <span style={{ color: "#f472b6", fontWeight: 800, fontSize: 24 }}>{karaX} × {karaY} = {karaResult.toLocaleString()}</span>
+          </div>
+          <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: 20 }}>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, marginBottom: 10, fontWeight: 700 }}>MATHEMATICAL BREAKDOWN</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}><span>High Products (ac)</span> <span style={{ color: "#f472b6" }}>Computed ✅</span></div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}><span>Low Products (bd)</span> <span style={{ color: "#f472b6" }}>Computed ✅</span></div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}><span>Cross Term (ad+bc)</span> <span style={{ color: "#f472b6" }}>Gauss Trick Applied ✅</span></div>
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: 4, paddingTop: 8, color: "#34d399" }}>
+                Recursive calls saved: 25% overhead
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      <p style={{ ...S.sectionLabel, color: "#94a3b8" }}>Execution Log</p>
-      <div style={S.logBox}>
-        {log.length === 0 ? <span style={{ color: "rgba(255,255,255,0.3)" }}>Press Run / Calculate to start...</span> :
-          log.map((entry, i) => (
-            <div key={i} style={{ color: entry.startsWith("  ") ? "rgba(255,255,255,0.55)" : "#f472b6" }}>
-              <span style={{ color: "rgba(255,255,255,0.25)", marginRight: 10 }}>{String(i + 1).padStart(2, "0")}</span>{entry}
-            </div>
-          ))}
-        <div ref={logEndRef} />
+      {/* Standardized Execution Log */}
+      <div className="log-panel" style={{ height: 250 }}>
+        <div className="log-header" style={{ borderColor: "rgba(236,72,153,0.2)" }}>
+           <span style={{ color: "#ec4899" }}>⚡</span> D&C Execution Log
+        </div>
+        <div className="log-content thin-scroll">
+          {log.length === 0 ? (
+            <div className="log-line" style={{ opacity: 0.4 }}>Waiting for input...</div>
+          ) : (
+            log.map((entry, i) => {
+              let className = "log-line";
+              if (entry.includes("Divide") || entry.includes("Conquer") || entry.includes("Combine") || !entry.startsWith("  ")) className += " log-highlight";
+              if (entry.includes("Result") || entry.includes("complete")) className += " log-success";
+              return (
+                <div key={i} className={className}>
+                  <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 12, fontSize: 11 }}>{String(i + 1).padStart(2, "0")}</span>
+                  {entry}
+                </div>
+              );
+            })
+          )}
+          <div ref={logEndRef} />
+        </div>
       </div>
     </div>
   );
@@ -2383,6 +3014,124 @@ const ALGORITHMS = {
       }
     ]
   },
+  tree: {
+    label: "Tree Algorithms",
+    color: "#10b981",
+    VisualizerComponent: TreeAlgorithmsVisualizer,
+    algos: [
+      {
+        name: "Level Order Traversal (BFS)",
+        best: "O(n)", avg: "O(n)", worst: "O(n)", space: "O(w)",
+        description: "Visits all nodes of a tree level by level, left to right, using a Queue. W is the maximum width (nodes on the widest level). Essential for shortest-path in unweighted trees.",
+        steps: [
+          "Initialize a Queue and enqueue the root node",
+          "While the queue is not empty:",
+          "  Dequeue the front node — process it",
+          "  Enqueue its left child (if it exists)",
+          "  Enqueue its right child (if it exists)",
+          "Repeat until all nodes are visited"
+        ],
+        pseudocode: `levelOrder(root):\n  if root is null: return\n  Q = Queue()\n  Q.enqueue(root)\n  while Q is not empty:\n    node = Q.dequeue()\n    process(node)\n    if node.left:  Q.enqueue(node.left)\n    if node.right: Q.enqueue(node.right)`,
+        example: {
+          input: "Tree: 1 → {2,3}, 2 → {4,5}, 3 → {6,7}",
+          trace: ["Enqueue root [1]", "Dequeue 1 → enqueue 2, 3. Queue: [2,3]", "Dequeue 2 → enqueue 4, 5. Queue: [3,4,5]", "Dequeue 3 → enqueue 6, 7. Queue: [4,5,6,7]", "Dequeue 4,5,6,7 (leaves, no children)"],
+          output: "Level order: [1, 2, 3, 4, 5, 6, 7]"
+        }
+      },
+      {
+        name: "Lowest Common Ancestor (LCA)",
+        best: "O(n)", avg: "O(n)", worst: "O(n)", space: "O(h)",
+        description: "Finds the deepest node that is an ancestor of both target nodes p and q. Uses recursive post-order DFS: if a node finds targets in BOTH its left and right subtrees, it is the LCA.",
+        steps: [
+          "If node is null, p, or q: return node (base case)",
+          "Recursively search the left subtree for LCA",
+          "Recursively search the right subtree for LCA",
+          "If both left and right returned non-null: current node IS the LCA",
+          "Otherwise: return whichever side returned a non-null value",
+          "h = height of tree (O(n) for skewed tree)"
+        ],
+        pseudocode: `lca(root, p, q):\n  if root is null or root == p or root == q:\n    return root\n  left  = lca(root.left,  p, q)\n  right = lca(root.right, p, q)\n  if left and right: return root  // LCA found!\n  return left if left else right`,
+        example: {
+          input: "Tree with root=1, nodes 4 and 8. Structure: 1→{2,3}, 2→{4,5}, 5→{8}",
+          trace: ["Search left(2): finds 4 in left subtree", "Search right(3): nothing", "Back at 2: left=4 found, search right(5)", "At 5: left returns 8", "At 2: both subtrees returned non-null → LCA is node 2"],
+          output: "LCA(4, 8) = Node 2"
+        }
+      },
+      {
+        name: "Tree Diameter",
+        best: "O(n)", avg: "O(n)", worst: "O(n)", space: "O(h)",
+        description: "The diameter (or width) of a tree is the number of EDGES on the longest path between any two nodes. This path may or may not pass through the root. Solved by computing subtree heights recursively.",
+        steps: [
+          "Recursively compute the height of left and right subtrees at each node",
+          "The diameter THROUGH the current node = left_height + right_height",
+          "Track the global maximum of this value across all nodes",
+          "The height returned upward = 1 + max(left_height, right_height)",
+          "The global max at the end is the tree's diameter"
+        ],
+        pseudocode: `diameter(root):\n  maxD = 0\n  def height(node):\n    if not node: return 0\n    lh = height(node.left)\n    rh = height(node.right)\n    maxD = max(maxD, lh + rh)  // path through node\n    return 1 + max(lh, rh)\n  height(root)\n  return maxD`,
+        example: {
+          input: "Tree: 1→{2,3}, 2→{4,5}, 3→{6}, 5→{8}",
+          trace: ["height(4)=0, height(8)=0, height(5)=1", "At node 2: lh=1(from 4), rh=2(from 5→8). Diameter thru 2 = 3", "At node 3: lh=1(from 6), rh=0. Diameter thru 3 = 1", "At root 1: lh=3(from 2), rh=2(from 3). Diameter thru 1 = 5"],
+          output: "Tree Diameter = 5 edges (longest path: 4 → 2 → 5 → 8 or similar)"
+        }
+      },
+      {
+        name: "Inorder / Preorder / Postorder DFS",
+        best: "O(n)", avg: "O(n)", worst: "O(n)", space: "O(h)",
+        description: "Three fundamental Depth-First traversals of a binary tree, each visiting nodes in a different order. Inorder on a BST always produces a sorted sequence.",
+        steps: [
+          "Inorder (Left → Root → Right): Gives sorted output for BST. Used for expression trees.",
+          "Preorder (Root → Left → Right): Creates a copy of the tree. Used to serialize/clone trees.",
+          "Postorder (Left → Right → Root): Used to delete/free a tree. Evaluates expression trees.",
+          "All three traverse every node exactly once: O(n) time",
+          "Recursion depth equals tree height h: O(h) space"
+        ],
+        pseudocode: `inorder(node):\n  if node: inorder(node.left); visit(node); inorder(node.right)\n\npreorder(node):\n  if node: visit(node); preorder(node.left); preorder(node.right)\n\npostorder(node):\n  if node: postorder(node.left); postorder(node.right); visit(node)`,
+        example: {
+          input: "BST: root=4, left=2 (children 1,3), right=6 (children 5,7)",
+          trace: ["Inorder:   [1, 2, 3, 4, 5, 6, 7] ← sorted!", "Preorder:  [4, 2, 1, 3, 6, 5, 7]", "Postorder: [1, 3, 2, 5, 7, 6, 4]"],
+          output: "Inorder gives sorted BST output; Postorder visits leaves before roots"
+        }
+      },
+      {
+        name: "Height & Balance Check",
+        best: "O(n)", avg: "O(n)", worst: "O(n)", space: "O(h)",
+        description: "Height of a tree = length of the longest root-to-leaf path. Balance check verifies the tree is height-balanced: |height(left) - height(right)| ≤ 1 for every node, ensuring AVL property.",
+        steps: [
+          "height(node) = 1 + max(height(left), height(right)); height(null) = 0",
+          "isBalanced: at each node, compute left_height and right_height",
+          "If |left_height - right_height| > 1: tree is unbalanced at this node",
+          "Recursively check both subtrees are also balanced",
+          "Return height=-1 as a sentinel to signal 'unbalanced' up the call stack"
+        ],
+        pseudocode: `height(node):\n  if not node: return 0\n  return 1 + max(height(node.left), height(node.right))\n\ncheckBalance(node):\n  if not node: return 0  // 0 = balanced leaf\n  lh = checkBalance(node.left)\n  rh = checkBalance(node.right)\n  if lh==-1 or rh==-1 or abs(lh-rh)>1: return -1  // unbalanced!\n  return 1 + max(lh, rh)`,
+        example: {
+          input: "Tree A (balanced): [4,2,6,1,3,5,7] | Tree B (skewed): [1,2,3,4]",
+          trace: ["Tree A: At root 4 → left height=2, right height=2. |2-2|=0 ≤ 1 ✅", "Tree B: At root 1 → left height=0, right height=3. |0-3|=3 > 1 ❌"],
+          output: "Tree A is balanced (AVL). Tree B is NOT balanced."
+        }
+      },
+      {
+        name: "Morris Inorder Traversal",
+        best: "O(n)", avg: "O(n)", worst: "O(n)", space: "O(1)",
+        description: "Traverses a binary tree inorder WITHOUT using recursion or an explicit stack. Uses threaded binary tree concept — temporarily modifies the tree's right pointers and then restores them. Achieves O(1) space.",
+        steps: [
+          "Set current = root",
+          "While current is not null:",
+          "  If current has NO left child: visit current, move right",
+          "  Else: Find the inorder predecessor (rightmost node in left subtree)",
+          "    If predecessor.right is null: make thread (predecessor.right = current), go left",
+          "    If predecessor.right is current: remove thread, visit current, go right"
+        ],
+        pseudocode: `morrisInorder(root):\n  curr = root\n  while curr:\n    if not curr.left:\n      visit(curr); curr = curr.right\n    else:\n      pred = inorderPredecessor(curr)\n      if pred.right is null:\n        pred.right = curr  // create thread\n        curr = curr.left\n      else:\n        pred.right = null  // remove thread\n        visit(curr); curr = curr.right`,
+        example: {
+          input: "BST: 4 → {2, 6}, 2 → {1, 3}",
+          trace: ["curr=4: has left. Pred of 4=3 (rightmost of left). Thread: 3.right=4. Go left to 2", "curr=2: has left. Pred of 2=1. Thread: 1.right=2. Go left to 1", "curr=1: no left. Visit 1. Go right → thread to 2", "curr=2: pred.right==curr. Remove thread. Visit 2. Go right to 3", "curr=3: no left. Visit 3. Go right → thread to 4", "curr=4: pred.right==curr. Remove thread. Visit 4. Go right to 6"],
+          output: "Inorder: [1, 2, 3, 4, 6] using O(1) extra space"
+        }
+      }
+    ]
+  },
   backtracking: {
     label: "Backtracking",
     color: "#8b5cf6",
@@ -2613,18 +3362,41 @@ export default function AlgorithmsPage() {
   const Viz = cat.VisualizerComponent;
 
   return (
-    <div className="page-container" style={{ maxWidth: 1100, margin: "0 auto" }}>
-      {/* Header */}
-      <div className="page-header" style={{ marginBottom: 36 }}>
-        <h1 className="page-title" style={{ letterSpacing: "-0.02em" }}>Algorithms</h1>
-        <p className="page-subtitle" style={{ fontSize: 15, lineHeight: 1.7 }}>
-          Complete algorithm reference with interactive visualizations, step-by-step execution logs,
-          complexity analysis, pseudocode, and worked examples.
+    <div className="page-container" style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px" }}>
+      {/* Header with improved typography and glass effect */}
+      <div style={{ 
+        marginBottom: 48, 
+        padding: "32px", 
+        background: "rgba(255,255,255,0.02)", 
+        borderRadius: 24, 
+        border: "1px solid rgba(255,255,255,0.05)",
+        backdropFilter: "blur(10px)"
+      }}>
+        <h1 className="page-title" style={{ 
+          fontSize: 48, 
+          letterSpacing: "-0.03em", 
+          marginBottom: 16,
+          background: "linear-gradient(to right, #fff, #94a3b8)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent"
+        }}>Algorithms</h1>
+        <p className="page-subtitle" style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", maxWidth: 700, lineHeight: 1.8 }}>
+          Explore the fundamental building blocks of computer science. Our interactive visualizers bring complex logic to life, 
+          helping you master sorting, searching, and advanced optimization techniques.
         </p>
       </div>
 
-      {/* Category tabs */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 36 }}>
+      {/* Modern category tabs with glow effects */}
+      <div style={{ 
+        display: "flex", 
+        gap: 12, 
+        flexWrap: "wrap", 
+        marginBottom: 48,
+        padding: "8px",
+        background: "rgba(0,0,0,0.2)",
+        borderRadius: 16,
+        border: "1px solid rgba(255,255,255,0.05)"
+      }}>
         {categories.map((k) => {
           const c = ALGORITHMS[k];
           const active = k === activeCategory;
@@ -2633,56 +3405,109 @@ export default function AlgorithmsPage() {
               key={k}
               onClick={() => setActiveCategory(k)}
               style={{
-                padding: "10px 20px", borderRadius: 10,
-                background: active ? `${c.color}20` : "rgba(255,255,255,0.04)",
-                border: `1px solid ${active ? c.color + "55" : "rgba(255,255,255,0.08)"}`,
-                color: active ? c.color : "rgba(255,255,255,0.55)",
-                fontWeight: active ? 700 : 500, fontSize: 13.5, cursor: "pointer",
-                transition: "all 0.2s", letterSpacing: "0.01em"
+                padding: "12px 24px", borderRadius: 12,
+                background: active ? `${c.color}25` : "transparent",
+                border: "none",
+                color: active ? "#fff" : "rgba(255,255,255,0.45)",
+                fontWeight: 700, fontSize: 14, cursor: "pointer",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                letterSpacing: "0.01em",
+                boxShadow: active ? `0 4px 20px ${c.color}33` : "none",
+                position: "relative",
+                overflow: "hidden"
               }}
             >
+              {active && <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, background: c.color }} />}
               {c.label}
             </button>
           );
         })}
       </div>
 
-      {/* Category content */}
-      <div>
-        {/* Category header */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
-          <div style={{ width: 4, height: 28, borderRadius: 2, background: cat.color }} />
-          <h2 style={{ color: "#f1f5f9", fontSize: 22, fontWeight: 800, margin: 0 }}>{cat.label}</h2>
-          <span style={{
-            background: `${cat.color}18`, color: cat.color,
+      {/* Main Content Area */}
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "1fr 380px", 
+        gap: 32,
+        alignItems: "start"
+      }}>
+        {/* Left Column: Visualizer */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+          <div style={{
+            background: "rgba(10,10,15,0.4)",
             border: `1px solid ${cat.color}44`,
-            borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 600
+            borderRadius: 24, 
+            padding: "36px",
+            backdropFilter: "blur(20px)",
+            boxShadow: `0 20px 50px rgba(0,0,0,0.4), inset 0 0 20px ${cat.color}11`
           }}>
-            {cat.algos.length} algorithms
-          </span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ width: 12, height: 12, borderRadius: "50%", background: cat.color, boxShadow: `0 0 15px ${cat.color}` }} />
+                <h2 style={{ color: "#fff", fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: "-0.01em" }}>
+                  {cat.label} Visualizer
+                </h2>
+              </div>
+              <span style={{
+                background: `${cat.color}18`, color: cat.color,
+                border: `1px solid ${cat.color}44`,
+                borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em"
+              }}>
+                Interactive
+              </span>
+            </div>
+            <Viz />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
+              <p style={{ ...S.sectionLabel, color: cat.color, margin: 0 }}>Detailed Reference</p>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {cat.algos.map((a) => (
+                <AlgoCard key={a.name} algo={a} catColor={cat.color} />
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Visualization Panel */}
-        <div style={{
-          background: "rgba(255,255,255,0.025)",
-          border: `1px solid ${cat.color}33`,
-          borderRadius: 18, padding: "28px 30px",
-          marginBottom: 32
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-            <div style={{ width: 3, height: 18, borderRadius: 2, background: cat.color }} />
-            <p style={{ ...S.sectionLabel, color: cat.color, margin: 0 }}>
-              Interactive Visualization
+        {/* Right Column: Context & Stats */}
+        <div style={{ position: "sticky", top: 40, display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ 
+            background: "rgba(255,255,255,0.03)", 
+            borderRadius: 20, 
+            padding: "24px", 
+            border: "1px solid rgba(255,255,255,0.08)"
+          }}>
+            <h3 style={{ fontSize: 18, marginBottom: 16, color: cat.color }}>Quick Overview</h3>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.7, marginBottom: 20 }}>
+              {cat.label} focus on different computational paradigms. Select an algorithm below to see its specifics.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "12px", background: "rgba(255,255,255,0.02)", borderRadius: 12 }}>
+                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Available Algos</span>
+                <span style={{ color: cat.color, fontWeight: 800 }}>{cat.algos.length}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "12px", background: "rgba(255,255,255,0.02)", borderRadius: 12 }}>
+                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Category Focus</span>
+                <span style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>{cat.label.split(' ')[0]}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ 
+            background: `linear-gradient(135deg, ${cat.color}11, transparent)`, 
+            borderRadius: 20, 
+            padding: "24px", 
+            border: `1px solid ${cat.color}22`
+          }}>
+            <h3 style={{ fontSize: 18, marginBottom: 12, color: "#fff" }}>Learning Tip</h3>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.7 }}>
+              Try running the visualizer with different inputs to see how the complexity affects execution time. Watch the log panel for step-by-step logic.
             </p>
           </div>
-          <Viz />
-        </div>
-
-        {/* Algorithm cards */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {cat.algos.map((a) => (
-            <AlgoCard key={a.name} algo={a} catColor={cat.color} />
-          ))}
         </div>
       </div>
     </div>

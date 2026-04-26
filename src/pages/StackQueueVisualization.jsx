@@ -345,6 +345,29 @@ export default function StackQueueVisualization() {
 
                     <div className="viz-grid">
                         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                            {/* Intuition Section */}
+                            <div style={{
+                                background: "rgba(59,130,246,0.08)",
+                                borderLeft: "4px solid #3b82f6",
+                                borderRadius: "0 14px 14px 0",
+                                padding: "18px 24px",
+                                marginBottom: 10,
+                                fontSize: 15,
+                                color: "rgba(255,255,255,0.8)",
+                                lineHeight: 1.7,
+                                fontStyle: "italic",
+                            }}>
+                                <span style={{ color: "#60a5fa", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+                                {mode === "stack" 
+                                    ? "Stacks follow Last-In, First-Out (LIFO). Think of it like a stack of plates: you can only add or remove from the very top. This is fundamental for undo mechanisms and recursion."
+                                    : mode === "queue"
+                                    ? "Queues follow First-In, First-Out (FIFO). Like a real-world waiting line, the first item added is the first one served. Used in task scheduling and IO buffers."
+                                    : mode === "pq"
+                                    ? "Priority Queues process elements based on an associated priority score rather than order of arrival. In this demo, lower numbers represent higher priority (Min-Heap style)."
+                                    : "Deques (Double-Ended Queues) are versatile structures that allow insertion and deletion from both ends, combining properties of both stacks and queues."
+                                }
+                            </div>
+
                             <div className="viz-panel">
                                 <div className="panel-header">
                                     <p className="panel-title">
@@ -392,7 +415,7 @@ export default function StackQueueVisualization() {
                             </div>
                             
                             {/* Permanent Execution Log below Visualizer */}
-                            <div className="log-panel" style={{ height: 200 }}>
+                            <div className="log-panel" style={{ height: 250 }}>
                                 <div className="log-header">
                                     <span style={{ color: "#3b82f6" }}>⚡</span> Execution Log
                                 </div>
@@ -486,13 +509,15 @@ export default function StackQueueVisualization() {
                     <div className="theory-accordion">
                         {THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" style={{ fontSize: 16, padding: "20px 24px" }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                <button className="accordion-trigger" style={{ fontSize: 18, padding: "24px 28px", fontWeight: 700 }} onClick={() => setOpenSection(openSection === i ? null : i)}>
                                     {s.title} 
-                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s" }}>▼</span>
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform(0.4s cubic-bezier(0.4, 0, 0.2, 1))" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content" style={{ padding: "0 24px 24px" }}>
-                                        {s.content}
+                                    <div className="accordion-content" style={{ padding: "0 28px 28px" }}>
+                                        <div className="theory-rich-content">
+                                            {s.content}
+                                        </div>
                                     </div>
                                 )}
                             </div>

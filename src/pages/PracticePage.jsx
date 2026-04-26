@@ -10,13 +10,6 @@ const TOPICS = [
   "Divide & Conquer", "Recursion", "String Algorithms"
 ];
 
-const LANGUAGES = [
-  { id: "pseudocode", label: "Pseudo" },
-  { id: "python", label: "Python" },
-  { id: "cpp", label: "C++" },
-  { id: "java", label: "Java" },
-];
-
 const EXAMPLES = {
   "Arrays": "Find the maximum sum of a contiguous subarray in an array of integers that may include negative numbers.",
   "Linked Lists": "Detect if a linked list has a cycle and find the node where the cycle begins.",
@@ -31,35 +24,6 @@ const EXAMPLES = {
   "Greedy Algorithms": "Given a list of jobs with deadlines and profits, schedule jobs to maximize total profit.",
   "Divide & Conquer": "Multiply two large integers using the Karatsuba algorithm to achieve better than O(n²) complexity.",
 };
-
-/* ─── Syntax highlighter (lightweight inline) ──────────────────── */
-function highlight(code = "", lang = "pseudocode") {
-  if (lang === "pseudocode") {
-    return code
-      .replace(/\b(if|else|elif|while|for|return|function|def|class|in|not|and|or|true|false|null|int|string|bool)\b/g,
-        '<span style="color:#c084fc">$1</span>')
-      .replace(/(\/\/.*|#.*)/g, '<span style="color:#6b7280">$1</span>')
-      .replace(/("[^"]*"|\'[^\']*\')/g, '<span style="color:#fb923c">$1</span>')
-      .replace(/\b(\d+)\b/g, '<span style="color:#34d399">$1</span>');
-  }
-  if (lang === "python") {
-    return code
-      .replace(/\b(def|class|if|elif|else|for|while|in|return|import|from|not|and|or|True|False|None|pass|break|continue|lambda)\b/g,
-        '<span style="color:#c084fc">$1</span>')
-      .replace(/(#.*)/g, '<span style="color:#6b7280">$1</span>')
-      .replace(/("[^"]*"|\'[^\']*\')/g, '<span style="color:#fb923c">$1</span>')
-      .replace(/\b(\d+)\b/g, '<span style="color:#34d399">$1</span>');
-  }
-  if (lang === "cpp" || lang === "java") {
-    return code
-      .replace(/\b(int|long|string|bool|void|float|double|char|auto|class|struct|if|else|for|while|return|new|delete|public|private|static|const|nullptr|true|false|import|public|class|extends|implements)\b/g,
-        '<span style="color:#c084fc">$1</span>')
-      .replace(/(\/\/.*)/g, '<span style="color:#6b7280">$1</span>')
-      .replace(/("[^"]*")/g, '<span style="color:#fb923c">$1</span>')
-      .replace(/\b(\d+)\b/g, '<span style="color:#34d399">$1</span>');
-  }
-  return code;
-}
 
 /* ─── Flowchart SVG ─────────────────────────────────────────────── */
 function FlowchartSVG({ steps = [] }) {
@@ -152,117 +116,98 @@ function ApproachCard({ a, idx, onSelect, selected }) {
   );
 }
 
-/* ─── Code Viewer ───────────────────────────────────────────────── */
-function CodeViewer({ code }) {
-  const [lang, setLang] = useState("pseudocode");
-  const [copied, setCopied] = useState(false);
 
-  const copy = () => {
-    navigator.clipboard.writeText(code?.[lang] || "");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+/* ─── Complexity Chart ──────────────────────────────────────────── */
+const COMPLEXITY_TIERS = [
+  { label: "O(1)",       color: "#34d399", tier: "Excellent",  width: 5 },
+  { label: "O(log n)",  color: "#6ee7b7", tier: "Excellent",  width: 10 },
+  { label: "O(n)",      color: "#fcd34d", tier: "Good",       width: 22 },
+  { label: "O(n log n)",color: "#fb923c", tier: "Fair",       width: 36 },
+  { label: "O(n²)",     color: "#f87171", tier: "Bad",        width: 58 },
+  { label: "O(2ⁿ)",     color: "#ef4444", tier: "Horrible",  width: 80 },
+  { label: "O(n!)",     color: "#dc2626", tier: "Worst",      width: 100 },
+];
 
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
-        {LANGUAGES.map(l => (
-          <button key={l.id} onClick={() => setLang(l.id)}
-            style={{
-              padding: "6px 16px", borderRadius: 8,
-              border: `1px solid ${lang === l.id ? "#6366f1" : "rgba(255,255,255,0.1)"}`,
-              background: lang === l.id ? "rgba(99,102,241,0.2)" : "rgba(255,255,255,0.04)",
-              color: lang === l.id ? "#a5b4fc" : "rgba(255,255,255,0.5)",
-              fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s"
-            }}>{l.label}</button>
-        ))}
-        <button onClick={copy}
-          style={{
-            marginLeft: "auto", padding: "6px 16px", borderRadius: 8,
-            border: "1px solid rgba(255,255,255,0.1)", background: copied ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.04)",
-            color: copied ? "#34d399" : "rgba(255,255,255,0.5)", fontSize: 13, cursor: "pointer", transition: "all 0.2s"
-          }}>{copied ? "Copied!" : "Copy"}</button>
-      </div>
-      <pre style={{
-        background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
-        padding: "20px 22px", fontSize: 13, lineHeight: 1.9, overflowX: "auto",
-        fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
-        margin: 0, maxHeight: 480, overflowY: "auto", color: "#e2e8f0"
-      }}
-        dangerouslySetInnerHTML={{ __html: highlight(code?.[lang] || "// No code generated", lang) }}
-      />
-    </div>
-  );
-}
+function ComplexityChart({ analysis }) {
+  const time = analysis?.complexity?.time || "";
+  const space = analysis?.complexity?.space || "";
+  const explanation = analysis?.complexity?.explanation || "";
 
-/* ─── Mini Inline Viz ───────────────────────────────────────────── */
-function InlineViz({ vizType, sampleInput }) {
-  const [bars] = useState(() => {
-    // Try to extract numbers from sampleInput
-    const nums = (sampleInput || "").match(/\d+/g)?.map(Number).slice(0, 10) || [64, 34, 25, 12, 22, 11, 90, 45, 55, 30];
-    const max = Math.max(...nums);
-    return nums.map(v => ({ val: v, pct: Math.round((v / max) * 100) }));
-  });
+  const getMatch = (val) => COMPLEXITY_TIERS.find(t =>
+    val.includes(t.label.replace("ⁿ", "^n").replace("²", "^2")) ||
+    val.includes(t.label)
+  ) || COMPLEXITY_TIERS.find(t => val.toLowerCase().includes(t.label.toLowerCase().split("(")[1]?.split(")")[0] || ""));
 
-  const nodeTypes = {
-    graph: { label: "Graph Adjacency Visualization", color: "#ef4444" },
-    tree: { label: "Binary Tree Visualization", color: "#8b5cf6" },
-    dp: { label: "DP Table Visualization", color: "#fcd34d" },
-    backtracking: { label: "Backtracking State Tree", color: "#a78bfa" },
-    heap: { label: "Heap Structure", color: "#fb923c" },
-  };
-
-  if (["sorting", "searching", "array"].includes(vizType)) {
-    return (
-      <div>
-        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 12, marginBottom: 12 }}>
-          Sample input: {sampleInput}
-        </p>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 140, padding: "0 4px" }}>
-          {bars.map((b, i) => (
-            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-              <span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{b.val}</span>
-              <div style={{
-                width: "100%", height: `${b.pct}%`, minHeight: 4,
-                background: `hsl(${220 + i * 15}, 80%, 60%)`,
-                borderRadius: "4px 4px 0 0", transition: "all 0.3s"
-              }} />
-            </div>
-          ))}
-        </div>
-        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 10, textAlign: "center" }}>
-          Array representation — run the Full Visualizer for step-by-step animation
-        </p>
-      </div>
-    );
-  }
-
-  const nt = nodeTypes[vizType];
-  if (nt) {
-    return (
-      <div style={{ textAlign: "center", padding: "40px 20px" }}>
-        <div style={{
-          width: 70, height: 70, borderRadius: "50%", margin: "0 auto 16px",
-          background: `${nt.color}20`, border: `2px solid ${nt.color}55`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 28
-        }}>
-          {vizType === "graph" ? "G" : vizType === "tree" ? "T" : vizType === "dp" ? "D" : vizType === "heap" ? "H" : "B"}
-        </div>
-        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{nt.label}</p>
-        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, marginTop: 6 }}>
-          Visit the dedicated {vizType} visualizer page for interactive step-through
-        </p>
-        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 12, marginTop: 8 }}>
-          Sample: {sampleInput}
-        </p>
-      </div>
-    );
-  }
+  const timeMatch = getMatch(time) || { color: "#60a5fa", tier: "Custom", width: 30 };
+  const spaceMatch = getMatch(space) || { color: "#a78bfa", tier: "Custom", width: 20 };
 
   return (
-    <div style={{ textAlign: "center", padding: "30px", color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
-      Sample: {sampleInput || "No sample provided"}
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Summary Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div style={{ background: `${timeMatch.color}12`, border: `1px solid ${timeMatch.color}40`, borderRadius: 12, padding: "18px 20px" }}>
+          <p style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 6px" }}>Time Complexity</p>
+          <p style={{ color: timeMatch.color, fontSize: 26, fontWeight: 900, margin: "0 0 4px", fontFamily: "'JetBrains Mono', monospace" }}>{time}</p>
+          <span style={{ background: `${timeMatch.color}20`, color: timeMatch.color, fontSize: 11, fontWeight: 700, borderRadius: 20, padding: "2px 10px" }}>{timeMatch.tier}</span>
+        </div>
+        <div style={{ background: `${spaceMatch.color}12`, border: `1px solid ${spaceMatch.color}40`, borderRadius: 12, padding: "18px 20px" }}>
+          <p style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 6px" }}>Space Complexity</p>
+          <p style={{ color: spaceMatch.color, fontSize: 26, fontWeight: 900, margin: "0 0 4px", fontFamily: "'JetBrains Mono', monospace" }}>{space}</p>
+          <span style={{ background: `${spaceMatch.color}20`, color: spaceMatch.color, fontSize: 11, fontWeight: 700, borderRadius: 20, padding: "2px 10px" }}>{spaceMatch.tier}</span>
+        </div>
+      </div>
+
+      {/* Big-O Spectrum Bar */}
+      <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 14, padding: "20px 22px", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <p style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 16px" }}>Big-O Complexity Spectrum</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {COMPLEXITY_TIERS.map(t => {
+            const isTime = time.includes(t.label) || time === t.label;
+            const isSpace = space.includes(t.label) || space === t.label;
+            return (
+              <div key={t.label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ width: 80, fontSize: 12, fontFamily: "'JetBrains Mono', monospace", color: t.color, fontWeight: 700, flexShrink: 0, textAlign: "right" }}>{t.label}</span>
+                <div style={{ flex: 1, height: 22, background: "rgba(255,255,255,0.04)", borderRadius: 6, overflow: "hidden", position: "relative" }}>
+                  <div style={{ height: "100%", width: `${t.width}%`, background: `${t.color}30`, borderRadius: 6, border: (isTime || isSpace) ? `1.5px solid ${t.color}` : "none", transition: "width 0.5s", display: "flex", alignItems: "center", paddingLeft: 8, gap: 6 }}>
+                    {isTime && <span style={{ fontSize: 10, color: t.color, fontWeight: 800 }}>⏱ Time</span>}
+                    {isSpace && <span style={{ fontSize: 10, color: t.color, fontWeight: 800 }}>💾 Space</span>}
+                  </div>
+                </div>
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", width: 58, flexShrink: 0 }}>{t.tier}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Explanation */}
+      {explanation && (
+        <div style={{ background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 12, padding: "16px 18px" }}>
+          <p style={{ color: "#a5b4fc", fontSize: 12, fontWeight: 700, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Analysis Explanation</p>
+          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 13.5, lineHeight: 1.7, margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>{explanation}</p>
+        </div>
+      )}
+
+      {/* Per-approach breakdown */}
+      {analysis?.approaches?.length > 0 && (
+        <div>
+          <p style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 12px" }}>Approach Complexity Breakdown</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {analysis.approaches.map((a, i) => {
+              const c = { brute: "#f87171", optimized: "#fb923c", optimal: "#34d399" }[a.complexity] || "#94a3b8";
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "12px 16px" }}>
+                  <span style={{ width: 22, height: 22, borderRadius: "50%", background: `${c}20`, border: `1px solid ${c}44`, color: c, fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span style={{ flex: 1, color: "#f1f5f9", fontSize: 13, fontWeight: 600 }}>{a.name}</span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#34d399" }}>T: {a.timeComplexity}</span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#60a5fa" }}>S: {a.spaceComplexity}</span>
+                  <span style={{ fontSize: 10, background: `${c}15`, color: c, borderRadius: 12, padding: "2px 10px", fontWeight: 700, textTransform: "capitalize" }}>{a.complexity}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -426,12 +371,11 @@ export default function PracticePage() {
 
   const TABS = [
     { id: "understanding", label: "Understanding" },
-    { id: "approaches", label: "Approaches" },
-    { id: "code", label: "Code" },
-    { id: "flowchart", label: "Flowchart" },
-    { id: "visualization", label: "Live Viz" },
-    { id: "hints", label: "Hints" },
-    { id: "similar", label: "Similar" },
+    { id: "approaches",    label: "Approaches" },
+    { id: "flowchart",     label: "Flowchart" },
+    { id: "complexity",    label: "Complexity" },
+    { id: "hints",         label: "Hints" },
+    { id: "similar",       label: "Similar" },
   ];
 
   return (
@@ -708,27 +652,7 @@ export default function PracticePage() {
                 </div>
               )}
 
-              {/* Code Tab */}
-              {activeTab === "code" && (
-                <div style={S.panel}>
-                  <div style={S.header}><p style={{ ...S.label, marginBottom: 0 }}>Multi-Language Code</p></div>
-                  <div style={S.body}>
-                    <CodeViewer code={analysis.code} />
-                    {analysis.sampleInput && (
-                      <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                        <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 10, padding: "12px 14px" }}>
-                          <p style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700, margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Sample Input</p>
-                          <code style={{ color: "#a5b4fc", fontSize: 13 }}>{analysis.sampleInput}</code>
-                        </div>
-                        <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 10, padding: "12px 14px" }}>
-                          <p style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700, margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Expected Output</p>
-                          <code style={{ color: "#34d399", fontSize: 13 }}>{analysis.sampleOutput}</code>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+
 
               {/* Flowchart Tab */}
               {activeTab === "flowchart" && (
@@ -750,28 +674,14 @@ export default function PracticePage() {
                 </div>
               )}
 
-              {/* Live Viz Tab */}
-              {activeTab === "visualization" && (
+              {/* Complexity Tab */}
+              {activeTab === "complexity" && (
                 <div style={S.panel}>
                   <div style={S.header}>
-                    <p style={{ ...S.label, marginBottom: 0 }}>Live Visualization Preview</p>
+                    <p style={{ ...S.label, marginBottom: 0 }}>Big-O Complexity Analysis</p>
                   </div>
                   <div style={S.body}>
-                    <div style={{ background: "rgba(0,0,0,0.25)", borderRadius: 12, padding: 20, marginBottom: 16 }}>
-                      <InlineViz vizType={analysis.vizType} sampleInput={analysis.sampleInput} />
-                    </div>
-                    <div style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 10, padding: "14px 16px" }}>
-                      <p style={{ color: "#a5b4fc", fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>Full Step-by-Step Visualization</p>
-                      <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, margin: "0 0 12px" }}>
-                        For full interactive animation visit the dedicated visualizer on the Algorithms page.
-                        The problem maps to: <strong style={{ color: "#a5b4fc" }}>{analysis.vizType}</strong> visualization.
-                      </p>
-                      <a href="/algorithms" style={{
-                        display: "inline-block", padding: "8px 18px", borderRadius: 8,
-                        background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.35)",
-                        color: "#a5b4fc", fontSize: 13, textDecoration: "none", fontWeight: 600
-                      }}>Open Algorithm Visualizer</a>
-                    </div>
+                    <ComplexityChart analysis={analysis} />
                   </div>
                 </div>
               )}

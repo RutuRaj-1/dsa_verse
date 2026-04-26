@@ -379,27 +379,6 @@ export default function ArrayVisualization() {
 
     return (
         <div className="page-container">
-            <style>{`
-                .theory-rich-content { color: rgba(255,255,255,0.85); font-size: 15px; line-height: 1.7; }
-                .theory-rich-content h4 { color: #60a5fa; margin: 16px 0 8px; font-size: 16px; font-weight: 700; }
-                .theory-rich-content ul, .theory-rich-content ol { padding-left: 24px; margin-bottom: 16px; }
-                .theory-rich-content li { margin-bottom: 6px; }
-                .theory-formula { background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 8px; font-family: monospace; color: #a78bfa; margin: 12px 0; border: 1px solid rgba(167,139,250,0.2); }
-                .theory-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-                .theory-table th, .theory-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
-                .theory-table th { background: rgba(255,255,255,0.05); color: #60a5fa; font-weight: 600; }
-                .log-panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 280px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-                .log-header { background: #1e293b; padding: 10px 16px; font-size: 14px; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #334155; }
-                .log-content { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; scroll-behavior: smooth; }
-                .log-line { color: #e2e8f0; line-height: 1.5; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
-                .log-line:hover { background: rgba(255,255,255,0.05); }
-                .log-success { color: #34d399; font-weight: 600; background: rgba(52,211,153,0.1); }
-                .log-error { color: #f87171; font-weight: 600; background: rgba(248,113,113,0.1); }
-                .log-highlight { color: #818cf8; }
-                .ctrl-select, .ctrl-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f1f5f9; border-radius: 8px; padding: 10px 14px; outline: none; }
-                .ctrl-select option { background: #1e293b; color: #f1f5f9; }
-            `}</style>
-
             <div className="page-header">
                 <Link to="/" className="back-btn">← Back to Topics</Link>
                 <h1 className="page-title">Arrays</h1>
@@ -416,6 +395,22 @@ export default function ArrayVisualization() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                     <div className="viz-grid">
                         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                            {/* Intuition Section */}
+                            <div style={{
+                                background: "rgba(59,130,246,0.08)",
+                                borderLeft: "4px solid #3b82f6",
+                                borderRadius: "0 14px 14px 0",
+                                padding: "18px 24px",
+                                marginBottom: 10,
+                                fontSize: 15,
+                                color: "rgba(255,255,255,0.8)",
+                                lineHeight: 1.7,
+                                fontStyle: "italic",
+                            }}>
+                                <span style={{ color: "#60a5fa", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+                                Arrays are the most fundamental data structure, storing elements in <strong>contiguous memory</strong>. This allows for O(1) random access via index, but makes resizing and insertions in the middle expensive (O(n)) due to the need for shifting elements.
+                            </div>
+
                             <div className="viz-panel">
                                 <div className="panel-header">
                                     <p className="panel-title">Array Visualization</p>
@@ -440,7 +435,7 @@ export default function ArrayVisualization() {
                             </div>
 
                             {/* Permanent Execution Log below Visualizer */}
-                            <div className="log-panel" style={{ height: 200 }}>
+                            <div className="log-panel" style={{ height: 250 }}>
                                 <div className="log-header">
                                     <span style={{ color: "#3b82f6" }}>⚡</span> Execution Log
                                 </div>
@@ -581,13 +576,15 @@ export default function ArrayVisualization() {
                     <div className="theory-accordion">
                         {ARRAY_THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" style={{ fontSize: 16, padding: "20px 24px" }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                <button className="accordion-trigger" style={{ fontSize: 18, padding: "24px 28px", fontWeight: 700 }} onClick={() => setOpenSection(openSection === i ? null : i)}>
                                     {s.title} 
-                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s" }}>▼</span>
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content" style={{ padding: "0 24px 24px" }}>
-                                        {s.content}
+                                    <div className="accordion-content" style={{ padding: "0 28px 28px" }}>
+                                        <div className="theory-rich-content">
+                                            {s.content}
+                                        </div>
                                     </div>
                                 )}
                             </div>

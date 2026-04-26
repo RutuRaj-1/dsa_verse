@@ -89,84 +89,68 @@ function HeapTree({ heap, highlight, comparing }) {
 
 const HEAP_THEORY = [
     {
-        title: "What is a Heap?",
+        title: "1. Fundamentals of Heaps",
         content: (
             <div className="theory-rich-content">
-                <p>A <strong>Heap</strong> is a complete binary tree satisfying the heap property:</p>
+                <p>A <strong>Heap</strong> is a specialized tree-based data structure that satisfies the <strong>Heap Property</strong>. It is almost always implemented as a <strong>Complete Binary Tree</strong>, which means all levels are fully filled except possibly the last, which is filled from left to right.</p>
+                <h4>The Heap Property:</h4>
                 <ul>
-                    <li><strong>Max-Heap:</strong> Every parent node is ≥ its children → root is the maximum element.</li>
-                    <li><strong>Min-Heap:</strong> Every parent node is ≤ its children → root is the minimum element.</li>
+                    <li><strong>Max-Heap:</strong> For any given node I, the value of I is greater than or equal to the values of its children. The largest element is at the root.</li>
+                    <li><strong>Min-Heap:</strong> For any given node I, the value of I is less than or equal to the values of its children. The smallest element is at the root.</li>
                 </ul>
-                <p>Heaps are stored efficiently as arrays. For a node at index <code>i</code>:</p>
+                <p>Heaps are mathematically represented as arrays for memory efficiency. For an element at index <code>i</code>:</p>
                 <div className="theory-formula">
-                    Left Child = 2i + 1<br/>
-                    Right Child = 2i + 2<br/>
-                    Parent = ⌊(i - 1) / 2⌋
+                    Left Child: (2 * i) + 1<br/>
+                    Right Child: (2 * i) + 2<br/>
+                    Parent: floor((i - 1) / 2)
                 </div>
             </div>
         )
     },
     {
-        title: "Key Operations & Complexity",
+        title: "2. Core Operations & Complexity",
         content: (
             <div className="theory-rich-content">
+                <p>The efficiency of a heap comes from its logarithmic height (log N), allowing for fast updates and removals.</p>
                 <table className="theory-table">
                     <thead>
-                        <tr><th>Operation</th><th>Time Complexity</th><th>Mechanism</th></tr>
+                        <tr><th>Operation</th><th>Time Complexity</th><th>Description</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>Insert</td><td>O(log n)</td><td>Bubble up</td></tr>
-                        <tr><td>Delete root</td><td>O(log n)</td><td>Heapify down</td></tr>
-                        <tr><td>Peek (max/min)</td><td>O(1)</td><td>Just arr[0]</td></tr>
-                        <tr><td>Build heap</td><td>O(n)</td><td>Surprise! Not O(n log n)</td></tr>
-                        <tr><td>Heap Sort</td><td>O(n log n)</td><td>Optimal comparison sort</td></tr>
+                        <tr><td><strong>Insert</strong></td><td>O(log N)</td><td>Add at end, then 'Bubble Up' (Sift-Up)</td></tr>
+                        <tr><td><strong>Extract Max/Min</strong></td><td>O(log N)</td><td>Swap root with last, remove last, then 'Heapify Down' (Sift-Down)</td></tr>
+                        <tr><td><strong>Peek</strong></td><td>O(1)</td><td>Access the element at index 0</td></tr>
+                        <tr><td><strong>Build Heap</strong></td><td>O(N)</td><td>Bottom-up heapification of an unordered array</td></tr>
+                        <tr><td><strong>Heap Sort</strong></td><td>O(N log N)</td><td>Repeatedly extract root to build a sorted array</td></tr>
                     </tbody>
                 </table>
-                <h4>Mechanism Details</h4>
+                <h4>Detailed Algorithms:</h4>
                 <ul>
-                    <li><strong>Heapify Up (Bubble up):</strong> After inserting at end, compare with parent and swap upward.</li>
-                    <li><strong>Heapify Down (Bubble down):</strong> After removing root, move last element to root and push down.</li>
+                    <li><strong>Sift-Up (Bubble Up):</strong> Used during insertion. We compare the new element with its parent. If the heap property is violated, we swap and recurse upwards.</li>
+                    <li><strong>Sift-Down (Heapify):</strong> Used during removal. We swap the root with the last child, remove the old root, then compare the new root with its largest/smallest child and swap downwards.</li>
                 </ul>
             </div>
         )
     },
     {
-        title: "Applications",
+        title: "3. Real-World Applications",
         content: (
             <div className="theory-rich-content">
+                <p>Heaps are fundamental to many advanced algorithms and system components:</p>
                 <ul>
-                    <li><strong>Priority Queues:</strong> Task scheduling, Dijkstra's algorithm.</li>
-                    <li><strong>Heap Sort:</strong> In-place O(n log n) sorting algorithm.</li>
-                    <li><strong>Finding k-th element:</strong> Find k-th largest/smallest element efficiently.</li>
-                    <li><strong>Median maintenance:</strong> Keeping track of the running median with two heaps.</li>
-                    <li><strong>Job scheduling:</strong> Scheduling with deadlines (Greedy algorithms).</li>
-                    <li><strong>Huffman Coding:</strong> Uses min-heap for optimal prefix codes.</li>
-                    <li><strong>Graph algorithms:</strong> Prim's MST, Dijkstra's shortest path.</li>
+                    <li><strong>Priority Queues:</strong> Heaps are the standard implementation for priority queues, used in OS task scheduling and interrupt handling.</li>
+                    <li><strong>Graph Algorithms:</strong> Dijkstra's Shortest Path and Prim's MST use Min-Heaps to efficiently pick the next node with the smallest weight.</li>
+                    <li><strong>K-Way Merge:</strong> Merging multiple sorted streams (e.g., external sorting in databases).</li>
+                    <li><strong>Selection Algorithms:</strong> Finding the K-th smallest or largest element in an unsorted array without sorting the entire array.</li>
+                    <li><strong>Median Maintenance:</strong> Keeping track of the running median with two heaps (one max-heap, one min-heap).</li>
+                    <li><strong>Huffman Coding:</strong> Building the optimal prefix code tree.</li>
                 </ul>
-            </div>
-        )
-    },
-    {
-        title: "Heap vs BST",
-        content: (
-            <div className="theory-rich-content">
-                <table className="theory-table">
-                    <thead>
-                        <tr><th>Feature</th><th>Heap</th><th>BST</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Ordering</td><td>Partial</td><td>Complete (left &lt; root &lt; right)</td></tr>
-                        <tr><td>Find min/max</td><td>O(1)</td><td>O(log n)</td></tr>
-                        <tr><td>Search arbitrary</td><td>O(n)</td><td>O(log n)</td></tr>
-                        <tr><td>Insert</td><td>O(log n)</td><td>O(log n)</td></tr>
-                        <tr><td>Build from array</td><td>O(n)</td><td>O(n log n)</td></tr>
-                        <tr><td>Best use</td><td>Priority queue</td><td>Sorted operations</td></tr>
-                    </tbody>
-                </table>
             </div>
         )
     }
 ];
+
+
 
 export default function HeapVisualization() {
     const [heap, setHeap] = useState([90, 75, 80, 55, 65, 60, 70, 20, 30, 40]);
@@ -313,21 +297,6 @@ export default function HeapVisualization() {
 
     return (
         <div className="page-container">
-            <style>{`
-                .theory-rich-content { color: rgba(255,255,255,0.85); font-size: 15px; line-height: 1.7; }
-                .theory-rich-content h4 { color: #60a5fa; margin: 16px 0 8px; font-size: 16px; font-weight: 700; }
-                .log-panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 280px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-                .log-header { background: #1e293b; padding: 10px 16px; font-size: 14px; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #334155; }
-                .log-content { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; scroll-behavior: smooth; }
-                .log-line { color: #e2e8f0; line-height: 1.5; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
-                .log-line:hover { background: rgba(255,255,255,0.05); }
-                .log-success { color: #34d399; font-weight: 600; background: rgba(52,211,153,0.1); }
-                .log-error { color: #f87171; font-weight: 600; background: rgba(248,113,113,0.1); }
-                .log-highlight { color: #818cf8; }
-                .ctrl-select, .ctrl-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #f1f5f9; border-radius: 8px; padding: 10px 14px; outline: none; }
-                .ctrl-select option { background: #1e293b; color: #f1f5f9; }
-            `}</style>
-
             <div className="page-header">
                 <Link to="/" className="back-btn">← Back to Topics</Link>
                 <h1 className="page-title">Heap Data Structure</h1>
@@ -343,6 +312,25 @@ export default function HeapVisualization() {
             {activeTab === "visualizer" && (
                 <div className="viz-grid">
                     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        {/* Intuition Section */}
+                        <div style={{
+                            background: "rgba(59,130,246,0.08)",
+                            borderLeft: "4px solid #3b82f6",
+                            borderRadius: "0 14px 14px 0",
+                            padding: "18px 24px",
+                            marginBottom: 10,
+                            fontSize: 15,
+                            color: "rgba(255,255,255,0.8)",
+                            lineHeight: 1.7,
+                            fontStyle: "italic",
+                        }}>
+                            <span style={{ color: "#60a5fa", fontWeight: 700, marginRight: 8 }}>💡 Intuition:</span>
+                            {heapType === "max" 
+                                ? "In a Max-Heap, every parent node is greater than or equal to its children. This makes the root always the maximum value, ideal for priority scheduling where highest value goes first."
+                                : "In a Min-Heap, every parent node is less than or equal to its children. The root is always the minimum value, essential for algorithms like Dijkstra's or Prim's."
+                            }
+                        </div>
+
                         <div className="viz-panel">
                             <div className="panel-header">
                                 <p className="panel-title">{heapType === "max" ? "🔴 Max-Heap" : "🔵 Min-Heap"} — Array Size: {heap.length}</p>
@@ -454,13 +442,15 @@ export default function HeapVisualization() {
                     <div className="theory-accordion">
                         {HEAP_THEORY.map((s, i) => (
                             <div key={i} className="accordion-item">
-                                <button className="accordion-trigger" style={{ fontSize: 16, padding: "20px 24px" }} onClick={() => setOpenSection(openSection === i ? null : i)}>
+                                <button className="accordion-trigger" style={{ fontSize: 18, padding: "24px 28px", fontWeight: 700 }} onClick={() => setOpenSection(openSection === i ? null : i)}>
                                     {s.title} 
-                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s" }}>▼</span>
+                                    <span style={{ color: "#60a5fa", transform: openSection === i ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)" }}>▼</span>
                                 </button>
                                 {openSection === i && (
-                                    <div className="accordion-content" style={{ padding: "0 24px 24px" }}>
-                                        {s.content}
+                                    <div className="accordion-content" style={{ padding: "0 28px 28px" }}>
+                                        <div className="theory-rich-content">
+                                            {s.content}
+                                        </div>
                                     </div>
                                 )}
                             </div>

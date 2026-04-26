@@ -8,12 +8,12 @@
 @layer base {
   :root {
     /* Dark theme base (default theme) */
-    --background: 220 27% 8%;
+    --background: 222 47% 4%;
     --foreground: 210 40% 98%;
 
-    --card: 220 27% 10%;
+    --card: 222 47% 6%;
     --card-foreground: 210 40% 98%;
-    --popover: 220 27% 10%;
+    --popover: 222 47% 6%;
     --popover-foreground: 210 40% 98%;
 
     /* Electric blue primary */
@@ -22,12 +22,12 @@
     --primary-glow: 217 91% 70%;
 
     /* Dark secondary */
-    --secondary: 220 27% 15%;
+    --secondary: 220 27% 12%;
     --secondary-foreground: 210 40% 98%;
 
     /* Muted variants */
-    --muted: 220 27% 12%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 27% 10%;
+    --muted-foreground: 215 20% 75%;
 
     /* Cyan accent */
     --accent: 180 100% 50%;
@@ -39,33 +39,33 @@
     --destructive-foreground: 210 40% 98%;
 
     /* Borders and inputs */
-    --border: 220 27% 20%;
-    --input: 220 27% 15%;
+    --border: 220 27% 18%;
+    --input: 220 27% 12%;
     --ring: 217 91% 60%;
 
     /* Radius */
-    --radius: 0.75rem;
+    --radius: 0.85rem;
 
     /* Custom design tokens */
     --neon-purple: 270 100% 70%;
     --neon-green: 120 100% 60%;
-    --code-bg: 220 27% 6%;
+    --code-bg: 220 27% 5%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(270 100% 70%));
     --gradient-accent: linear-gradient(90deg, hsl(180 100% 50%), hsl(217 91% 60%));
-    --gradient-card: linear-gradient(145deg, hsl(220 27% 10%), hsl(220 27% 12%));
+    --gradient-card: linear-gradient(145deg, hsl(222 47% 6%), hsl(222 47% 8%));
 
     /* Shadows with glow effects */
-    --shadow-neon: 0 0 20px hsl(217 91% 60% / 0.3);
-    --shadow-accent: 0 0 20px hsl(180 100% 50% / 0.2);
-    --shadow-card: 0 10px 30px -10px hsl(220 27% 4% / 0.3);
+    --shadow-neon: 0 0 25px hsl(217 91% 60% / 0.25);
+    --shadow-accent: 0 0 25px hsl(180 100% 50% / 0.15);
+    --shadow-card: 0 15px 40px -10px hsl(222 47% 2% / 0.5);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    /* Sidebar palette (optional; keep if you use a sidebar) */
+    /* Sidebar palette */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -76,7 +76,6 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  /* If you ever flip to a different dark palette with class="dark" */
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -84,7 +83,6 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
@@ -98,34 +96,253 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-
-    /* Dark sidebar */
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  /* Global resets and Tailwind utilities */
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    /* subtle background glow */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
     background-image:
-      radial-gradient(1200px 600px at -20% -20%, hsl(var(--primary) / 0.08), transparent 40%),
-      radial-gradient(1200px 600px at 120% 0%, hsl(var(--accent) / 0.08), transparent 40%);
+      radial-gradient(1400px 700px at -20% -20%, hsl(var(--primary) / 0.1), transparent 50%),
+      radial-gradient(1400px 700px at 120% 0%, hsl(var(--accent) / 0.1), transparent 50%);
     background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    @apply font-bold tracking-tight text-white;
   }
 }
 
-/* Reusable utilities used in components/pages */
+@layer components {
+  /* Standardized Theory Styling */
+  .theory-rich-content {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 17px;
+    line-height: 1.8;
+  }
+
+  .theory-rich-content h4 {
+    color: #60a5fa;
+    margin: 24px 0 12px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .theory-rich-content p {
+    margin-bottom: 16px;
+  }
+
+  .theory-rich-content ul, .theory-rich-content ol {
+    padding-left: 28px;
+    margin-bottom: 20px;
+    list-style-type: none;
+  }
+
+  .theory-rich-content li {
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .theory-rich-content ul li::before {
+    content: "→";
+    position: absolute;
+    left: -28px;
+    color: #60a5fa;
+    font-weight: bold;
+    opacity: 0.6;
+  }
+
+  .theory-formula {
+    background: rgba(0, 0, 0, 0.45);
+    padding: 18px 24px;
+    border-radius: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #a78bfa;
+    margin: 24px 0;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    font-size: 15.5px;
+    box-shadow: inset 0 2px 15px rgba(0,0,0,0.4);
+  }
+
+  .theory-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 20px 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .theory-table th, .theory-table td {
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .theory-table th {
+    background: rgba(255, 255, 255, 0.05);
+    color: #60a5fa;
+    font-weight: 800;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .theory-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .theory-table td {
+    color: rgba(255,255,255,0.8);
+    font-size: 16.5px;
+  }
+
+  .prose code,
+  .prose pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .prose pre {
+    @apply text-sm leading-6 rounded-md p-3 bg-black/30 border border-border;
+  }
+
+  .log-panel {
+    background: #060a14;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .log-header {
+    background: rgba(255,255,255,0.03);
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .log-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    scroll-behavior: smooth;
+  }
+
+  .log-line {
+    color: #e2e8f0;
+    line-height: 1.6;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .log-line:hover {
+    background: rgba(255,255,255,0.04);
+  }
+
+  .log-success {
+    color: #34d399;
+    font-weight: 600;
+    background: rgba(52,211,153,0.1);
+  }
+
+  .log-error {
+    color: #f87171;
+    font-weight: 600;
+    background: rgba(248,113,113,0.1);
+  }
+
+  .log-highlight {
+    color: #818cf8;
+    font-weight: 600;
+  }
+
+  .ctrl-select, .ctrl-input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+    border-radius: 12px;
+    padding: 12px 18px;
+    outline: none;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .ctrl-select:focus, .ctrl-input:focus {
+    border-color: #3b82f6;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+  }
+
+  .ctrl-select option {
+    background: #060a14;
+    color: #f1f5f9;
+  }
+
+  .algo-card {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 12px;
+    transition: var(--transition-smooth);
+  }
+
+  .algo-card:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(255,255,255,0.01);
+  }
+
+  .algo-title {
+    color: #60a5fa;
+    font-weight: 800;
+    font-size: 16px;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .algo-desc {
+    color: rgba(255,255,255,0.7);
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .algo-formula {
+    background: rgba(0,0,0,0.4);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #a78bfa;
+    font-size: 14px;
+    border: 1px solid rgba(167, 139, 250, 0.15);
+  }
+}
+
 @layer utilities {
   .bg-gradient-card {
     background: var(--gradient-card);
@@ -140,39 +357,17 @@
     backdrop-filter: blur(2px);
   }
 
-  .border-primary-glow {
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.35), 0 0 22px hsl(var(--primary) / 0.25);
-  }
-
-  .border-accent-glow {
-    box-shadow: 0 0 0 1px hsl(var(--accent) / 0.35), 0 0 22px hsl(var(--accent) / 0.25);
-  }
-
-  /* Thin scrollbars (webkit) */
   .thin-scroll::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   .thin-scroll::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.4);
+    background: hsl(var(--muted-foreground) / 0.3);
     border-radius: 999px;
   }
 
   .thin-scroll::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.6);
-  }
-}
-
-/* Optional: nicer typography for TheoryPanel sections */
-@layer components {
-
-  .prose code,
-  .prose pre {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  }
-
-  .prose pre {
-    @apply text-sm leading-6 rounded-md p-3 bg-black/30 border border-border;
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 }

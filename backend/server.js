@@ -285,12 +285,7 @@ const MOCK_ANALYSIS = {
       "recommended": true
     }
   ],
-  "code": {
-    "pseudocode": "function isValid(s):\n  stack = []\n  map = {')': '(', '}': '{', ']': '['}\n  \n  for char in s:\n    if char in map:\n      topElement = stack.pop() if stack is not empty else '#'\n      if map[char] != topElement:\n        return false\n    else:\n      stack.push(char)\n      \n  return stack is empty",
-    "cpp": "bool isValid(string s) {\n    stack<char> st;\n    for(char c : s) {\n        if(c == '(' || c == '{' || c == '[') {\n            st.push(c);\n        } else {\n            if(st.empty()) return false;\n            if(c == ')' && st.top() != '(') return false;\n            if(c == '}' && st.top() != '{') return false;\n            if(c == ']' && st.top() != '[') return false;\n            st.pop();\n        }\n    }\n    return st.empty();\n}",
-    "java": "public boolean isValid(String s) {\n    Stack<Character> stack = new Stack<>();\n    for (char c : s.toCharArray()) {\n        if (c == '(') stack.push(')');\n        else if (c == '{') stack.push('}');\n        else if (c == '[') stack.push(']');\n        else if (stack.isEmpty() || stack.pop() != c) return false;\n    }\n    return stack.isEmpty();\n}",
-    "python": "def isValid(s: str) -> bool:\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    \n    for char in s:\n        if char in mapping:\n            top_element = stack.pop() if stack else '#'\n            if mapping[char] != top_element:\n                return False\n        else:\n            stack.append(char)\n            \n    return not stack"
-  },
+
   "flowSteps": [
     { "step": "START — Check Valid Parentheses", "type": "start" },
     { "step": "Initialize empty Stack", "type": "process" },
@@ -306,7 +301,6 @@ const MOCK_ANALYSIS = {
     "space": "O(n)",
     "explanation": "We iterate through the string of length n exactly once. In the worst case (all opening brackets), the stack will push n characters."
   },
-  "vizType": "generic",
   "sampleInput": "s = \"{[]}\"",
   "sampleOutput": "true"
 };
@@ -344,12 +338,11 @@ CRITICAL INSTRUCTIONS:
 3. Generate pseudocode in clear, language-independent notation using indentation
 4. For flowSteps, use clear action verbs: START, SET, CHECK, RETURN, REPEAT, etc.
 5. Decision steps must end with "?" 
-6. vizType must be EXACTLY one of: sorting, searching, graph, tree, dp, backtracking, array, linked_list, heap, string, generic
-7. A "complexity" field in each approach must be EXACTLY one of: brute, optimized, optimal
-8. The recommended approach must have "recommended": true
-9. DO NOT include any text before or after the JSON. DO NOT include markdown code blocks.
-10. Ensure all JSON keys and string values are enclosed in double quotes.
-11. Ensure there are no trailing commas.`;
+6. A "complexity" field in each approach must be EXACTLY one of: brute, optimized, optimal
+7. The recommended approach must have "recommended": true
+8. DO NOT include any text before or after the JSON. DO NOT include markdown code blocks.
+9. Ensure all JSON keys and string values are enclosed in double quotes.
+10. Ensure there are no trailing commas.`;
 }
 
 // ── Validation Helper ────────────────────────────────────────────────
@@ -429,12 +422,7 @@ Analyze this DSA problem and respond with ONLY valid JSON (no markdown, no backt
       "recommended": true
     }
   ],
-  "code": {
-    "pseudocode": "GENERATE ACTUAL PSEUDOCODE HERE",
-    "cpp": "GENERATE ACTUAL C++ CODE HERE",
-    "java": "GENERATE ACTUAL JAVA CODE HERE",
-    "python": "GENERATE ACTUAL PYTHON CODE HERE"
-  },
+
   "flowSteps": [
     { "step": "START — description", "type": "start" },
     { "step": "Action step", "type": "process" },
@@ -446,7 +434,6 @@ Analyze this DSA problem and respond with ONLY valid JSON (no markdown, no backt
     "space": "Final optimal space",
     "explanation": "Brief explanation"
   },
-  "vizType": "sorting",
   "sampleInput": "example input",
   "sampleOutput": "expected output"
 }
@@ -454,8 +441,7 @@ Analyze this DSA problem and respond with ONLY valid JSON (no markdown, no backt
 IMPORTANT:
 1. Replace "GENERATE ACTUAL ..." with real, working code.
 2. Ensure flowSteps is an array at the TOP level.
-3. Ensure complexity is an object at the TOP level.
-4. vizType MUST be one of: sorting, searching, graph, tree, dp, backtracking, array, linked_list, heap, string, generic.`;
+3. Ensure complexity is an object at the TOP level.`;
 
     const rawText = await generateAIResponse("analyze", systemPrompt, userPrompt, MOCK_ANALYSIS);
     const jsonText = extractJSON(rawText);

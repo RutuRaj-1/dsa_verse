@@ -1,6 +1,11 @@
 # DSA Intelligence Context — Master Knowledge Base
 # Built from curriculum theory + established DSA references
-# Version 1.0 — Used by Gemini RAG agent
+# Version 2.0 — Optimized for RAG Agent Complexity Analysis
+
+## Note on Outputs:
+*   The system no longer uses a "Live Viz" tab.
+*   Instead, the primary output focus should be on **Complexity Analysis** (providing accurate Big-O tiers, Space vs. Time breakdowns, and explanations) and **Approaches**.
+*   Ensure that all complexity strings use standard notation (e.g., `O(n log n)`, `O(n^2)`).
 
 ---
 
@@ -371,15 +376,20 @@ if s1[i] == s2[j]: dp[i][j] = dp[i-1][j-1]
 else: dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
 ```
 
-**6. Matrix Chain Multiplication:**
+**6. Matrix Chain Multiplication (MCM Pattern):**
 ```
 dp[i][j] = min cost to multiply matrices i through j
 for len = 2 to n:
   for i = 1 to n-len+1:
     j = i+len-1
     for k = i to j-1:
-      dp[i][j] = min(dp[i][j], dp[i][k]+dp[k+1][j]+p[i-1]*p[k]*p[j])
+      dp[i][j] = min(dp[i][j], dp[i][k]+dp[k+1][j]+cost)
 ```
+
+**7. State Machine / Buy-Sell Stock Pattern:**
+- Used when there are distinct states (e.g., holding stock, empty-handed, cooldown).
+- `hold[i] = max(hold[i-1], empty[i-1] - prices[i])`
+- `empty[i] = max(empty[i-1], hold[i-1] + prices[i])`
 
 ---
 
