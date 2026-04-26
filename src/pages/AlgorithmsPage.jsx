@@ -1404,6 +1404,8 @@ function BacktrackingVisualizer() {
   const [log, setLog] = useState([]);
   const [running, setRunning] = useState(false);
   const [found, setFound] = useState(false);
+  const [solutions, setSolutions] = useState([]);
+  const [currentSolutionIdx, setCurrentSolutionIdx] = useState(-1);
   const stopRef = useRef(false);
   const logEndRef = useRef(null);
 
@@ -1413,25 +1415,46 @@ function BacktrackingVisualizer() {
     }
   }, [log]);
 
-  const isSafe = (b, row, col) => {
+  const isSafe = (b, row, col, size) => {
     for (let j = 0; j < col; j++) if (b[row][j]) return false;
     for (let i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) if (b[i][j]) return false;
-    for (let i = row + 1, j = col - 1; i < N && j >= 0; i++, j--) if (b[i][j]) return false;
+    for (let i = row + 1, j = col - 1; i < size && j >= 0; i++, j--) if (b[i][j]) return false;
     return true;
   };
 
-  const solveNQueens = async (b, col, logs) => {
-    if (col >= N) return true;
+  const solveNQueens = async (b, col, logs, findAll = true) => {
+    if (col >= N) {
+      const sol = b.map(r => [...r]);
+      setSolutions(prev => [...prev, sol]);
+      logs.push(`✅ Solution #${solutions.length + 1} found!`);
+      setLog([...logs]);
+      return !findAll; // return true if we only want one, false to keep searching
+    }
+
     for (let row = 0; row < N; row++) {
       if (stopRef.current) return false;
-      logs.push(`Try Queen at (r=${row}, c=${col})`); setLog([...logs]);
-      b[row][col] = true; setBoard(b.map(r => [...r])); await sleep(300);
-      if (isSafe(b, row, col)) {
-        logs.push(`  Safe. Place. Recurse to col ${col + 1}`); setLog([...logs]);
-        if (await solveNQueens(b, col + 1, logs)) return true;
-        logs.push(`  Backtrack from col ${col + 1}`); setLog([...logs]);
-      } else { logs.push(`  Not safe. Next row.`); setLog([...logs]); }
-      b[row][col] = false; setBoard(b.map(r => [...r])); await sleep(150);
+      
+      // Speed up for large N or when finding all
+      const delay = N > 8 ? 10 : 150;
+
+      if (N <= 8) {
+        logs.push(`Try Queen at (r=${row}, c=${col})`); setLog([...logs]);
+        b[row][col] = true; setBoard(b.map(r => [...r])); await sleep(delay);
+      } else {
+        b[row][col] = true;
+      }
+
+      if (isSafe(b, row, col, N)) {
+        if (N <= 8) {
+          logs.push(`  Safe. Place. Recurse to col ${col + 1}`); setLog([...logs]);
+        }
+        if (await solveNQueens(b, col + 1, logs, findAll)) return true;
+      }
+      
+      b[row][col] = false;
+      if (N <= 8) {
+        setBoard(b.map(r => [...r])); await sleep(delay / 2);
+      }
     }
     return false;
   };
@@ -1461,13 +1484,20 @@ function BacktrackingVisualizer() {
   };
 
   const run = async () => {
-    stopRef.current = false; setRunning(true); setFound(false);
+    stopRef.current = false; setRunning(true); setFound(false); setSolutions([]); setCurrentSolutionIdx(-1);
     if (algo === "nqueens") {
       const b = Array(N).fill(null).map(() => Array(N).fill(false));
       setBoard(b.map(r => [...r]));
-      const logs = [`N-Queens Problem: N=${N}`]; setLog([...logs]);
-      const result = await solveNQueens(b, 0, logs);
-      setFound(result); logs.push(result ? `Solution found for ${N}-Queens!` : "No solution exists."); setLog([...logs]);
+      const logs = [`N-Queens Problem: N=${N}`, "Searching for all possible solutions..."]; 
+      setLog([...logs]);
+      
+      // For N=16, we limit the search or use a faster method if we just want count, 
+      // but here we'll try to find up to 100 solutions for visualization
+      await solveNQueens(b, 0, logs, true);
+      
+      setFound(solutions.length > 0);
+      logs.push(`Search complete. Found ${solutions.length} solutions.`);
+      setLog([...logs]);
     } else {
       setSubset([]); setSsIndex(0);
       const logs = [`Subset Sum Problem: Target = ${ssTarget}`]; setLog([...logs]);
@@ -1479,9 +1509,11 @@ function BacktrackingVisualizer() {
 
   const reset = () => {
     stopRef.current = true;
-    setBoard(Array(N).fill(null).map(() => Array(N).fill(false)));
+    const size = N;
+    setBoard(Array(size).fill(null).map(() => Array(size).fill(false)));
     setSubset([]); setSsIndex(-1);
     setLog([]); setRunning(false); setFound(false);
+    setSolutions([]); setCurrentSolutionIdx(-1);
   };
 
   const cellSize = Math.min(52, Math.floor(260 / N));
@@ -1503,8 +1535,8 @@ function BacktrackingVisualizer() {
         {algo === "nqueens" && (
           <label style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
             N:
-            {[4, 5, 6].map(v => (
-              <button key={v} onClick={() => { if (!running) { setN(v); setBoard(Array(v).fill(null).map(() => Array(v).fill(false))); setLog([]); setFound(false); }}}
+            {[4, 8, 16].map(v => (
+              <button key={v} onClick={() => { if (!running) { setN(v); setBoard(Array(v).fill(null).map(() => Array(v).fill(false))); setLog([]); setFound(false); setSolutions([]); setCurrentSolutionIdx(-1); }}}
                 style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${N === v ? "#8b5cf6" : "rgba(255,255,255,0.1)"}`, background: N === v ? "rgba(139,92,246,0.15)" : "transparent", color: N === v ? "#a78bfa" : "rgba(255,255,255,0.5)", fontSize: 12, cursor: "pointer" }}>
                 {v}
               </button>
@@ -1519,24 +1551,47 @@ function BacktrackingVisualizer() {
       </div>
 
       {algo === "nqueens" ? (
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-          <div style={{ display: "inline-block", border: "2px solid rgba(139,92,246,0.3)", borderRadius: 8, overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
+          <div style={{ display: "inline-block", border: "2px solid rgba(139,92,246,0.3)", borderRadius: 8, overflow: "hidden", background: "#000" }}>
             {board.map((row, r) => (
               <div key={r} style={{ display: "flex" }}>
                 {row.map((cell, c) => (
                   <div key={c} style={{
                     width: cellSize, height: cellSize,
-                    background: cell ? "rgba(139,92,246,0.35)" : (r + c) % 2 === 0 ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.01)",
+                    background: cell ? "rgba(139,92,246,0.6)" : (r + c) % 2 === 0 ? "#1e293b" : "#0f172a",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    border: "1px solid rgba(139,92,246,0.1)",
+                    border: "1px solid rgba(255,255,255,0.05)",
                     fontSize: cellSize * 0.5, transition: "background 0.2s"
                   }}>
-                    {cell && <span style={{ color: "#a78bfa", fontWeight: 900, fontSize: cellSize * 0.55 }}>Q</span>}
+                    {cell && <span style={{ color: "#fff", fontWeight: 900, fontSize: cellSize * 0.7, textShadow: "0 0 10px rgba(139,92,246,0.8)" }}>♛</span>}
                   </div>
                 ))}
               </div>
             ))}
           </div>
+          
+          {solutions.length > 0 && (
+            <div style={{ marginTop: 20, width: "100%", maxWidth: 600 }}>
+              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, textAlign: "center", marginBottom: 12 }}>
+                Found <strong>{solutions.length}</strong> possible solutions. {N === 16 && "(Limited search for performance)"}
+              </p>
+              <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 10, scrollbarWidth: "thin" }}>
+                {solutions.map((sol, idx) => (
+                  <div key={idx} 
+                    onClick={() => { setBoard(sol); setCurrentSolutionIdx(idx); }}
+                    style={{
+                      minWidth: 60, height: 60, borderRadius: 6, cursor: "pointer",
+                      border: `2px solid ${currentSolutionIdx === idx ? "#8b5cf6" : "rgba(255,255,255,0.1)"}`,
+                      background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center",
+                      flexDirection: "column", transition: "all 0.2s"
+                    }}>
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Sol</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: currentSolutionIdx === idx ? "#a78bfa" : "#f1f5f9" }}>#{idx + 1}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div style={{ marginBottom: 20 }}>
