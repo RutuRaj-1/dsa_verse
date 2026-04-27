@@ -69,6 +69,18 @@ The platform features a highly optimized algorithm hub with a standardized UI (g
 *   **Working:** Visually maps blocks representing elements. For sorting, highlights swapped and compared elements in real-time, matching array indices to visual blocks.
 *   **Logic:** Executes array shifting for operations. In sorting, runs the exact sorting algorithms (Merge, Quick, Bubble) wrapped in an async engine to pause states for rendering to the DOM.
 
+### 8.1.1. Index / Landing Page (`Index.tsx`, `LandingPage.jsx`)
+*   **Importance:** Serves as the main entry point and overview for the platform. Presents all major topics and features, guiding users to visualizers and documentation.
+*   **Theory:** Introduces the breadth of DSA, the importance of visualization, and the platform’s unique features (interactive, step-by-step, deep theory, problem analyzer).
+*   **Working:** Renders a hero section, feature highlights, and a grid of clickable topic cards. Each card links to a specific data structure or algorithm visualizer.
+*   **Logic:** Uses a topics array to dynamically generate cards. Routing logic directs users to the correct visualizer or documentation page. Animations and gradients enhance engagement.
+
+### 8.1.2. Dashboard (`Dashboard.jsx`)
+*   **Importance:** Personalized learning hub after login. Summarizes user progress, available units, and provides quick access to all topics and practice tools.
+*   **Theory:** Reinforces the curriculum structure (linear/non-linear DS, algorithms, practice). Emphasizes mastery through visualization and practice.
+*   **Working:** Displays hero stats, topic grids for DS and algorithms, and a call-to-action for the practice lab. Each topic card is color-coded by difficulty and links to the relevant page.
+*   **Logic:** Maps over topic arrays to render cards. Uses authentication context to personalize greetings. Integrates navigation and progress tracking.
+
 ### 8.2. Linked Lists (`LinkedListVisualization.jsx`)
 *   **Importance:** Essential for understanding pointer-based memory allocation, overcoming the fixed-size limitations of contiguous arrays.
 *   **Theory:** Covers dynamic memory, nodes containing data and reference pointers (Singly, Doubly, Circular).

@@ -168,12 +168,14 @@ export default function HashingVisualization() {
     const [tableSize, setTableSize] = useState(10);
     const [table, setTable] = useState(() => Array.from({ length: 10 }, () => []));
     const [hashAlgo, setHashAlgo] = useState("division");
+    const [collisionStrategy, setCollisionStrategy] = useState("chaining");
     
     const [key, setKey] = useState("");
     const [value, setValue] = useState("");
     const [searchKey, setSearchKey] = useState("");
     
     const [highlight, setHighlight] = useState(null);
+    const [probingIdx, setProbingIdx] = useState(null);
     const [openSection, setOpenSection] = useState(null);
     const [activeTab, setActiveTab] = useState("visualizer");
     const [isRunning, setIsRunning] = useState(false);
