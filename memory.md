@@ -61,5 +61,61 @@ The platform features a highly optimized algorithm hub with a standardized UI (g
 *   **Advanced String Algorithms**: KMP, Z-Algorithm, and Rabin-Karp pattern matchers.
 *   **Custom Dataset Imports**: Allow users to load CSV files into graph nodes or array blocks.
 
+## 8. End-to-End Page Analysis
+
+### 8.1. Arrays & Sorting (`ArrayVisualization.jsx` / `SortingVisualization.jsx`)
+*   **Importance:** Arrays are the foundational, contiguous memory structure. Sorting algorithms are the benchmark for understanding algorithmic efficiency and Big-O notation.
+*   **Theory:** Discusses how memory mapping is contiguous, index-based access is $O(1)$, and various sorting paradigms (comparison-based vs non-comparison based).
+*   **Working:** Visually maps blocks representing elements. For sorting, highlights swapped and compared elements in real-time, matching array indices to visual blocks.
+*   **Logic:** Executes array shifting for operations. In sorting, runs the exact sorting algorithms (Merge, Quick, Bubble) wrapped in an async engine to pause states for rendering to the DOM.
+
+### 8.2. Linked Lists (`LinkedListVisualization.jsx`)
+*   **Importance:** Essential for understanding pointer-based memory allocation, overcoming the fixed-size limitations of contiguous arrays.
+*   **Theory:** Covers dynamic memory, nodes containing data and reference pointers (Singly, Doubly, Circular).
+*   **Working:** Nodes are rendered dynamically, linked by SVG arrows. Inserting or deleting a node updates the visual arrows, illustrating pointer detachment and reattachment.
+*   **Logic:** React state tracks the `head`, `tail`, and `next` pointers. UI calculation maps the logical traversal $O(N)$ into a visual progression along the nodes.
+
+### 8.3. Stacks & Queues (`StackQueueVisualization.jsx`)
+*   **Importance:** Foundational operational behaviors used in parsing, scheduling, and recursion.
+*   **Theory:** Restrictive structures (LIFO for Stacks, FIFO for Queues). Theory covers stack frames and buffer processing.
+*   **Working:** Visually demonstrates elements being pushed onto the top or enqueued at the back. Pops/dequeues remove from the respective ends.
+*   **Logic:** Array-backed state enforces standard constraints. $O(1)$ operations strictly enforced to demonstrate how the data boundaries are managed.
+
+### 8.4. Trees (`TreeVisualization.jsx`)
+*   **Importance:** Crucial for non-linear, hierarchical data mapping and optimized search protocols.
+*   **Theory:** Nodes with children, focusing heavily on Binary Search Trees (BST), AVL self-balancing rotations, and traversal strategies.
+*   **Working:** Uses recursive logic to calculate (x, y) coordinates for nodes and links them with SVG paths. Highlights nodes to map recursive DFS/BFS traversals visually.
+*   **Logic:** State maintains a hierarchical object structure. Calculating the layout involves determining depth and width dynamically to ensure no node overlap in the SVG space. AVL logic tracks height and balance factors to trigger complex rotation re-rendering.
+
+### 8.5. Graphs (`GraphVisualization.jsx`)
+*   **Importance:** Essential for modeling networks, paths, relationships, and state spaces.
+*   **Theory:** Nodes (vertices) and edges. Pathfinding (BFS, DFS, Dijkstra’s).
+*   **Working:** Draggable nodes interconnected by dynamic edges. Animations highlight visited nodes, frontiers, and the shortest path.
+*   **Logic:** Adjacency lists power the logic. Graph traversal utilizes underlying queues (BFS) or priority queues (Dijkstra's) and explicitly updates "visited" states and edge styles to map the algorithmic state machine to the UI.
+
+### 8.6. Hashing (`HashingVisualization.jsx`)
+*   **Importance:** The core of constant time $O(1)$ retrieval systems, dictionaries, and database indexing.
+*   **Theory:** Hash functions (Division, Multiplication) mapping to index buckets. Collision handling via Separate Chaining (Linked Lists).
+*   **Working:** Visually hashes a string or number, animates it moving into the calculated bucket index, and appends it to a visual linked list attached to that bucket if a collision occurs.
+*   **Logic:** Computes string char codes to modulo table sizes. UI renders an array of arrays (buckets) and maps the inner arrays horizontally as linked chains.
+
+### 8.7. Heaps (`HeapVisualization.jsx`)
+*   **Importance:** Underpins priority queues, process scheduling, and efficient min/max extraction.
+*   **Theory:** A complete binary tree that satisfies the Max-Heap or Min-Heap property. Array-based tree representation.
+*   **Working:** Displays a dual-view: an Array and a Tree. Elements are added to the array, and the tree visually builds. `HeapifyUp` and `HeapifyDown` swap node colors and positions simultaneously in both views.
+*   **Logic:** Employs standard parent `(i-1)/2`, left child `2i+1`, and right child `2i+2` index math. The state is an array, but the UI component recursively interprets it into coordinate space for the tree view.
+
+### 8.8. The Algorithms Hub (`AlgorithmsPage.jsx`)
+*   **Importance:** The grand library of computer science standard algorithms.
+*   **Theory:** Groups algorithms by paradigm (Greedy, DP, Backtracking, Divide & Conquer).
+*   **Working:** Uses standardized glassmorphism dropdown menus. Select an algorithm, see the specific visual (e.g., an N-Queens board, or a knapsack table), and watch execution logs generate in real-time.
+*   **Logic:** An absolute engineering feat. Wraps 30+ highly varied algorithms into a unified async execution engine that logs steps, pauses state, updates DOM safely, and allows early termination if the user switches algorithms mid-execution.
+
+### 8.9. AI Practice Lab (`PracticePage.jsx`)
+*   **Importance:** Transitions users from passive learning to active problem-solving and interview preparation.
+*   **Theory:** Bridges the gap between algorithmic theory and real-world coding. Tests pattern recognition and time/space complexity optimization.
+*   **Working:** A sleek chat-like interface. User inputs a problem statement. Backend RAG pipeline triggers, returning an LLM response styled perfectly into sections (Pattern, Approaches, Complexity Spectrum, Flowchart).
+*   **Logic:** The frontend formats a request, sends it to Node backend -> Backend queries Gemini Flash with system prompts and a RAG context -> Parses JSON -> React frontend dynamically renders complex UI components (Complexity Spectrum bars) based on the JSON payload.
+
 ---
 **Documentation Prepared by Antigravity AI for Academic & Professional Review**
